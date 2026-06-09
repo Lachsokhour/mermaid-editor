@@ -1,18 +1,22 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Minus, Plus, Maximize, Minimize, Expand } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
+import { useI18n } from '../i18n/I18nProvider'
 import ColorPalette from './ColorPalette'
 import mermaid from 'mermaid'
 
-function initMermaid(currentTheme, themeColors) {
+function initMermaid(currentTheme, themeColors, locale) {
   const isDark = currentTheme === 'dark'
+  const font = locale === 'kh'
+    ? '"Kantumruy Pro", "Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    : '"Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
   mermaid.mermaidAPI?.globalReset?.()
   mermaid.initialize({
     startOnLoad: false,
     theme: 'base',
     maxTextSize: 50000,
     securityLevel: 'loose',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: font,
     themeVariables: {
       darkMode: isDark,
       background: isDark ? '#1a1b1e' : '#ffffff',
@@ -31,6 +35,7 @@ function patchSvgColors(svg, _themeColors, _currentTheme) {
 
 export default function Preview() {
   const { currentCode, currentTheme, gridVisible, zoom, panX, panY, themeColors, setZoom, setPan, resetView } = useEditorStore()
+  const { t, locale } = useI18n()
   const containerRef = useRef(null)
   const [rendered, setRendered] = useState('')
   const [loading, setLoading] = useState(false)
@@ -62,7 +67,7 @@ export default function Preview() {
     setLoading(true)
     setError(null)
 
-    initMermaid(currentTheme, themeColors)
+    initMermaid(currentTheme, themeColors, locale)
 
     const container = document.getElementById('mermaid-container')
     if (container) container.innerHTML = ''
@@ -74,7 +79,7 @@ export default function Preview() {
       setLoading(false)
     }).catch(err => {
       if (id !== renderIdRef.current) return
-      setError(err.message || 'Syntax error')
+      setError(err.message || t('common.syntaxError'))
       setLoading(false)
     })
   }, [currentCode, currentTheme, themeColors])
@@ -98,16 +103,22 @@ export default function Preview() {
     container.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`
   }, [zoom, panX, panY])
 
-  // Zoom on wheel
-  const handleWheel = useCallback((e) => {
-    e.preventDefault()
-    const delta = e.deltaY > 0 ? -0.1 : 0.1
-    zoomRef.current = Math.max(0.2, Math.min(3, zoomRef.current + delta))
-    const container = document.getElementById('mermaid-container')
-    if (container) {
-      container.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${zoomRef.current})`
+  // Zoom on wheel (non-passive to allow preventDefault)
+  useEffect(() => {
+    const el = previewRef.current
+    if (!el) return
+    const handler = (e) => {
+      e.preventDefault()
+      const delta = e.deltaY > 0 ? -0.1 : 0.1
+      zoomRef.current = Math.max(0.2, Math.min(3, zoomRef.current + delta))
+      const container = document.getElementById('mermaid-container')
+      if (container) {
+        container.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${zoomRef.current})`
+      }
+      setZoom(zoomRef.current)
     }
-    setZoom(zoomRef.current)
+    el.addEventListener('wheel', handler, { passive: false })
+    return () => el.removeEventListener('wheel', handler)
   }, [setZoom])
 
   // Pan on drag
@@ -163,7 +174,7 @@ export default function Preview() {
       const id = ++renderIdRef.current
       setLoading(true)
       setError(null)
-      initMermaid(currentTheme, themeColors)
+      initMermaid(currentTheme, themeColors, locale)
       mermaid.render('mermaid-render-' + id, code).then(({ svg }) => {
         if (id !== renderIdRef.current) return
         const patched = patchSvgColors(svg, themeColors, currentTheme)
@@ -171,7 +182,7 @@ export default function Preview() {
         setLoading(false)
       }).catch(err => {
         if (id !== renderIdRef.current) return
-        setError(err.message || 'Syntax error')
+      setError(err.message || t('common.syntaxError'))
         setLoading(false)
       })
     }
@@ -183,14 +194,14 @@ export default function Preview() {
     <div id="previewPanel" className="flex flex-col h-full bg-white dark:bg-zinc-900">
       {/* Preview Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 shrink-0">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Preview</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{t('common.preview')}</span>
         <div className="flex items-center gap-1">
           <button onClick={() => {
             zoomRef.current = Math.max(0.2, zoomRef.current - 0.1)
             const c = document.getElementById('mermaid-container')
             if (c) c.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${zoomRef.current})`
             setZoom(zoomRef.current)
-          }} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer" title="Zoom Out">
+          }} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer" title={t('common.zoomOut')}>
             <Minus size={12} />
           </button>
           <span className="text-[11px] text-zinc-500 dark:text-zinc-400 w-8 text-center font-mono">{Math.round(zoom * 100)}%</span>
@@ -199,7 +210,7 @@ export default function Preview() {
             const c = document.getElementById('mermaid-container')
             if (c) c.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${zoomRef.current})`
             setZoom(zoomRef.current)
-          }} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer" title="Zoom In">
+          }} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer" title={t('common.zoomIn')}>
             <Plus size={12} />
           </button>
           <button onClick={() => {
@@ -208,11 +219,11 @@ export default function Preview() {
             const c = document.getElementById('mermaid-container')
             if (c) c.style.transform = 'translate(0px, 0px) scale(1)'
             resetView()
-          }} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer" title="Reset View">
+          }} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer" title={t('common.resetView')}>
             <Expand size={12} />
           </button>
           <ColorPalette />
-          <button onClick={toggleFullscreen} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer" title={fullscreen ? 'Exit Fullscreen' : 'Full Screen'}>
+          <button onClick={toggleFullscreen} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-pointer" title={fullscreen ? t('common.exitFullscreen') : t('common.fullScreen')}>
             {fullscreen ? <Minimize size={12} /> : <Maximize size={12} />}
           </button>
         </div>
@@ -224,7 +235,6 @@ export default function Preview() {
         className={`flex-1 flex items-center justify-center p-6 overflow-hidden relative ${
           gridVisible ? 'preview-grid' : ''
         } cursor-grab`}
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -251,7 +261,7 @@ export default function Preview() {
         )}
 
         {!currentCode?.trim() && !loading && (
-          <span className="text-xs text-zinc-400 dark:text-zinc-500">Enter code to render diagram</span>
+          <span className="text-xs text-zinc-400 dark:text-zinc-500">{t('common.enterCode')}</span>
         )}
       </div>
     </div>

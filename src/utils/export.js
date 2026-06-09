@@ -33,6 +33,16 @@ export async function downloadSVG() {
   showToast('SVG downloaded', 'success')
 }
 
+function svgString(svgEl) {
+  const xml = new XMLSerializer().serializeToString(svgEl)
+  let s = xml
+  if (!s.includes('xmlns='))
+    s = s.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
+  if (s.includes('xlink:') && !s.includes('xmlns:xlink='))
+    s = s.replace('<svg', '<svg xmlns:xlink="http://www.w3.org/1999/xlink"')
+  return s
+}
+
 export async function downloadPNG() {
   const svgEl = document.querySelector('#mermaid-container svg')
   if (!svgEl) { showToast('No diagram to download', 'warning'); return }
@@ -53,16 +63,25 @@ export async function downloadPNG() {
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
   ctx.scale(scale, scale)
-  const svgString = svgClone.outerHTML
+  const serialized = svgString(svgClone)
   const img = new Image()
-  const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+  const blob = new Blob([serialized], { type: 'image/svg+xml;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   img.onload = () => {
-    ctx.drawImage(img, padding, padding, width, height)
+    try {
+      ctx.drawImage(img, padding, padding, width, height)
+      URL.revokeObjectURL(url)
+      canvas.toBlob(b => {
+        if (b) downloadBlob(b, 'diagram.png')
+      })
+    } catch {
+      URL.revokeObjectURL(url)
+      showToast('Failed to export PNG. Try SVG instead.', 'error')
+    }
+  }
+  img.onerror = () => {
     URL.revokeObjectURL(url)
-    canvas.toBlob(b => {
-      if (b) downloadBlob(b, 'diagram.png')
-    })
+    showToast('Failed to render PNG', 'error')
   }
   img.src = url
 }
@@ -102,14 +121,20 @@ function svgToPngBlob(svgEl) {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.scale(scale, scale)
     const img = new Image()
-    const blob = new Blob([clone.outerHTML], { type: 'image/svg+xml;charset=utf-8' })
+    const serialized = svgString(clone)
+    const blob = new Blob([serialized], { type: 'image/svg+xml;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     img.onload = () => {
-      ctx.drawImage(img, padding, padding, width, height)
-      URL.revokeObjectURL(url)
-      canvas.toBlob(resolve)
+      try {
+        ctx.drawImage(img, padding, padding, width, height)
+        URL.revokeObjectURL(url)
+        canvas.toBlob(resolve)
+      } catch {
+        URL.revokeObjectURL(url)
+        resolve(null)
+      }
     }
-    img.onerror = () => resolve(null)
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null) }
     img.src = url
   })
 }

@@ -1,13 +1,13 @@
 const DIAGRAMS = [
   { id: 'flowchart', label: 'Flowchart', icon: 'Workflow', code: 'graph TD\n  A[Start] --> B{Is it working?}\n  B -->|Yes| C[Great!]\n  B -->|No| D[Fix it]\n  D --> A' },
-  { id: 'class', label: 'Class', icon: 'Sitemap', code: 'classDiagram\n  class Animal {\n    +String name\n    +makeSound()\n  }\n  class Dog {\n    +breed\n    +makeSound()\n  }\n  class Cat {\n    +lives\n    +makeSound()\n  }\n  Animal <|-- Dog\n  Animal <|-- Cat\n  Animal : +eat()\n  Animal : +sleep()' },
+  { id: 'class', label: 'Class', icon: 'ListTree', code: 'classDiagram\n  class Animal {\n    +String name\n    +makeSound()\n  }\n  class Dog {\n    +breed\n    +makeSound()\n  }\n  class Cat {\n    +lives\n    +makeSound()\n  }\n  Animal <|-- Dog\n  Animal <|-- Cat\n  Animal : +eat()\n  Animal : +sleep()' },
   { id: 'sequence', label: 'Sequence', icon: 'ArrowRightLeft', code: 'sequenceDiagram\n  participant Alice\n  participant Bob\n  Alice->>John: Hello John, how are you?\n  John-->>Alice: Great!\n  Alice-)John: See you later!\n  Note over Alice,John: A friendly conversation' },
   { id: 'entity-relationship', label: 'ER Diagram', icon: 'Database', code: 'erDiagram\n  CUSTOMER ||--o{ ORDER : places\n  ORDER ||--|{ LINE-ITEM : contains\n  CUSTOMER {\n    string name\n    string email\n  }\n  ORDER {\n    int orderNumber\n    date placedAt\n  }' },
   { id: 'state', label: 'State', icon: 'CircleDot', code: 'stateDiagram-v2\n  [*] --> Still\n  Still --> [*]\n  Still --> Moving\n  Moving --> Still\n  Moving --> Crash\n  Crash --> [*]' },
   { id: 'info', label: 'Info', icon: 'Info', code: 'info\n  showInfo' },
-  { id: 'gantt', label: 'Gantt', icon: 'ChartBar', code: 'gantt\n  title Project Timeline\n  dateFormat YYYY-MM-DD\n  axisFormat %b %d\n\n  section Planning\n  Requirements :a1, 2024-03-01, 7d\n  Design :a2, after a1, 5d\n\n  section Development\n  Frontend :a3, after a2, 10d\n  Backend :a4, after a2, 10d\n\n  section Testing\n  QA :a5, after a3, 5d\n  Deployment :a6, after a4 a5, 3d' },
+  { id: 'gantt', label: 'Gantt', icon: 'GanttChart', code: 'gantt\n  title Project Timeline\n  dateFormat YYYY-MM-DD\n  axisFormat %b %d\n\n  section Planning\n  Requirements :a1, 2024-03-01, 7d\n  Design :a2, after a1, 5d\n\n  section Development\n  Frontend :a3, after a2, 10d\n  Backend :a4, after a2, 10d\n\n  section Testing\n  QA :a5, after a3, 5d\n  Deployment :a6, after a4 a5, 3d' },
   { id: 'kanban', label: 'Kanban', icon: 'Columns3', code: 'kanban\n  Todo [Create wireframes]\n  Todo [Set up database]\n  Doing [Develop API]\n  Doing [Build UI components]\n  Done [Project setup]\n  Done [Requirements review]' },
-  { id: 'timeline', label: 'Timeline', icon: 'Timeline', code: 'timeline\n  title Company Milestones\n  2020 : Founded\n  2021 : First product launch\n  2022 : 100k users\n  2023 : Series A funding\n  2024 : International expansion' },
+  { id: 'timeline', label: 'Timeline', icon: 'History', code: 'timeline\n  title Company Milestones\n  2020 : Founded\n  2021 : First product launch\n  2022 : 100k users\n  2023 : Series A funding\n  2024 : International expansion' },
   { id: 'user-journey', label: 'User Journey', icon: 'Route', code: 'journey\n  title User Onboarding\n  section Sign Up\n    Create account: 5: User\n    Verify email: 3: User\n  section Setup\n    Complete profile: 4: User\n    First action: 5: User, System\n  section Success\n    Achieve goal: 5: User' },
   { id: 'requirement', label: 'Requirement', icon: 'CheckCircle', code: 'requirementDiagram\n  requirement Authentication {\n    id: 1\n    text: User must log in\n    risk: high\n    verifymethod: test\n  }\n  element LoginForm {\n    type: UI\n  }\n  LoginForm - satisfies -> Authentication' },
   { id: 'mindmap', label: 'Mindmap', icon: 'GitFork', code: 'mindmap\n  root((Project))\n    Frontend\n      React\n      TypeScript\n      CSS\n    Backend\n      Node.js\n      Database\n    DevOps\n      CI/CD\n      Docker\n      Cloud' },
@@ -24,7 +24,7 @@ const DIAGRAMS = [
   { id: 'treeview', label: 'TreeView', icon: 'FolderTree', code: '%% TreeView-like with mindmap\nmindmap\n  root((File System))\n    Documents\n      Work\n        report.pdf\n        slides.pptx\n      Personal\n        photos\n        music\n    Downloads\n      tools\n      assets\n    Projects\n      web-app\n      mobile-app' },
   { id: 'treemap', label: 'Treemap', icon: 'LayoutTemplate', code: '%% Treemap-like with mindmap\nmindmap\n  root((Market))\n    Technology\n      Apple\n      Samsung\n      Google\n    Energy\n      Shell\n      BP\n    Finance\n      JPMorgan\n      Goldman' },
   { id: 'venn', label: 'Venn', icon: 'Circle', code: '%% Venn-style with flowchart\nflowchart TD\n  A((Skills))\n  B((Interests))\n  C((Opportunities))\n  A x--x B\n  B x--x C\n  A x--x C' },
-  { id: 'eventmodeling', label: 'Event Modeling', icon: 'Timeline', code: 'eventmodeling\n\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt ItemAdded' },
+  { id: 'eventmodeling', label: 'Event Modeling', icon: 'History', code: 'eventmodeling\n\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt ItemAdded' },
 ]
 
 const TYPE_DETECTORS = [

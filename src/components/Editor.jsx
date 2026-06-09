@@ -2,11 +2,12 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Code2, Settings, Book, AlertTriangle, Workflow } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
 import { showToast } from '../utils/export'
+import { useI18n } from '../i18n/I18nProvider'
 
 const TABS = [
-  { id: 'code', label: 'Code', icon: Code2 },
-  { id: 'config', label: 'Config', icon: Settings },
-  { id: 'docs', label: 'Docs', icon: Book },
+  { id: 'code', icon: Code2 },
+  { id: 'config', icon: Settings },
+  { id: 'docs', icon: Book },
 ]
 
 const DOCS_URLS = {
@@ -40,13 +41,14 @@ const DOCS_URLS = {
 
 export default function Editor() {
   const { currentCode, setCurrentCode, configText, setConfigText, activeDiagram, detectType } = useEditorStore()
+  const { t } = useI18n()
   const [activeTab, setActiveTab] = useState('code')
   const [diagramLabel, setDiagramLabel] = useState('')
   const debounceRef = useRef(null)
 
   useEffect(() => {
-    setDiagramLabel(activeDiagram?.label || '')
-  }, [activeDiagram])
+    setDiagramLabel(t('diagrams.' + (activeDiagram?.id || '')))
+  }, [activeDiagram, t])
 
   const handleCodeChange = useCallback((e) => {
     const code = e.target.value
@@ -68,11 +70,11 @@ export default function Editor() {
     }
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
       e.preventDefault()
-      showToast('Saved', 'success')
+      showToast(t('common.saved'), 'success')
     }
-  }, [])
+  }, [t])
 
-  const editorLabel = activeDiagram?.label || diagramLabel
+  const editorLabel = t('diagrams.' + (activeDiagram?.id || '')) || diagramLabel
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-zinc-900">
@@ -92,7 +94,7 @@ export default function Editor() {
               }`}
             >
               <Icon size={13} />
-              {tab.label}
+              {t('editor.tab.' + tab.id)}
             </button>
           )
         })}
@@ -112,7 +114,7 @@ export default function Editor() {
           onKeyDown={handleKeyDown}
           className="flex-1 w-full p-4 text-sm leading-relaxed font-mono bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-none outline-none resize-none tab-size-2"
           spellCheck={false}
-          placeholder="Enter Mermaid diagram code..."
+          placeholder={t('editor.placeholder')}
         />
       )}
 
@@ -131,13 +133,18 @@ export default function Editor() {
         <div className="flex-1 p-6 overflow-y-auto text-sm text-zinc-600 dark:text-zinc-400 space-y-4">
           <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
             <AlertTriangle size={14} />
-            <span className="font-medium">Getting Started</span>
+            <span className="font-medium">{t('common.gettingStarted')}</span>
           </div>
-          <p>Start by selecting a diagram type from the sidebar, or type Mermaid code directly in the Code tab.</p>
-          <p>Use <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-xs font-mono">Ctrl+Enter</kbd> to render, <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-xs font-mono">Ctrl+S</kbd> to save.</p>
+          <p>{t('common.introLine1')}</p>
+          <p dangerouslySetInnerHTML={{
+            __html: t('common.introLine2').replace(
+              /Ctrl\+Enter|Ctrl\+S/g,
+              m => `<kbd class="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-xs font-mono">${m}</kbd>`
+            )
+          }} />
 
           <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
-            <p className="font-medium text-zinc-700 dark:text-zinc-300 mb-2">Documentation</p>
+            <p className="font-medium text-zinc-700 dark:text-zinc-300 mb-2">{t('common.documentation')}</p>
             {activeDiagram && DOCS_URLS[activeDiagram.id] ? (
               <a
                 href={DOCS_URLS[activeDiagram.id]}
@@ -145,7 +152,7 @@ export default function Editor() {
                 rel="noopener noreferrer"
                 className="text-indigo-600 dark:text-indigo-400 hover:underline text-xs"
               >
-                View {activeDiagram.label} Guide &rarr;
+                {t('editor.viewGuide', { label: t('diagrams.' + activeDiagram.id) })} &rarr;
               </a>
             ) : (
               <a
@@ -154,23 +161,23 @@ export default function Editor() {
                 rel="noopener noreferrer"
                 className="text-indigo-600 dark:text-indigo-400 hover:underline text-xs"
               >
-                View Mermaid Documentation &rarr;
+                {t('editor.viewMermaidDocs')} &rarr;
               </a>
             )}
           </div>
 
           <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
-            <p className="font-medium text-zinc-700 dark:text-zinc-300 mb-2">Keyboard Shortcuts</p>
+            <p className="font-medium text-zinc-700 dark:text-zinc-300 mb-2">{t('common.keyboardShortcuts')}</p>
             <div className="space-y-1 text-xs">
               {[
-                ['Ctrl+Enter', 'Render diagram'],
-                ['Ctrl+S', 'Save state'],
-                ['Ctrl+B', 'Toggle sidebar'],
-                ['Ctrl+Shift+D', 'Toggle dark mode'],
-              ].map(([key, desc]) => (
+                ['Ctrl+Enter', 'common.renderDiagram'],
+                ['Ctrl+S', 'common.saveState'],
+                ['Ctrl+B', 'common.toggleSidebar'],
+                ['Ctrl+Shift+D', 'common.toggleTheme'],
+              ].map(([key, descKey]) => (
                 <div key={key} className="flex justify-between">
                   <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-[10px]">{key}</kbd>
-                  <span className="text-zinc-400">{desc}</span>
+                  <span className="text-zinc-400">{t(descKey)}</span>
                 </div>
               ))}
             </div>

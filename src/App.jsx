@@ -7,8 +7,17 @@ import BottomBar from './components/BottomBar'
 import Toast from './components/Toast'
 import { ShareModal, HistoryModal } from './components/Modal'
 import { useEditorStore } from './store/editorStore'
+import { I18nProvider } from './i18n/I18nProvider'
 
 export default function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
+  )
+}
+
+function AppContent() {
   const { currentTheme, toggleSidebar, sidebarOpen, editorPanelWidth, setEditorPanelWidth } = useEditorStore()
   const [shareOpen, setShareOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
