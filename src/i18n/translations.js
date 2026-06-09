@@ -58,6 +58,7 @@ const en = {
     renderDiagram: 'Render diagram',
     saveState: 'Save state',
     language: 'Language',
+    aiComingSoon: 'AI features coming soon!',
   },
   toast: {
     saved: 'Saved',
@@ -170,6 +171,7 @@ const kh = {
     renderDiagram: 'បង្ហាញដ្យាក្រាម',
     saveState: 'រក្សាទុក',
     language: 'ភាសា',
+    aiComingSoon: 'មុខងារ AI នឹងមកដល់ឆាប់ៗ!',
   },
   toast: {
     saved: 'បានរក្សាទុក',

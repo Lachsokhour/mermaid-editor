@@ -2,6 +2,7 @@ import { Copy, Image, Download, Moon, Sun, Grid3x3 } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
 import { copyToClipboard, downloadSVG, downloadPNG, copyImage, showToast } from '../utils/export'
 import { useI18n } from '../i18n/I18nProvider'
+import { version as mermaidVersion } from 'mermaid/package.json'
 
 export default function BottomBar() {
   const { currentCode, currentTheme, toggleTheme, gridVisible, toggleGrid, zoom } = useEditorStore()
@@ -57,6 +58,9 @@ export default function BottomBar() {
       </div>
 
       <div className="flex items-center gap-2">
+        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          Mermaid v{mermaidVersion}
+        </span>
         <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
           {Math.round(zoom * 100)}%
         </span>

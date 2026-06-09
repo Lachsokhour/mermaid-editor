@@ -79,7 +79,7 @@ export const useEditorStore = create((set, get) => ({
   togglePalette: () => set(s => ({ paletteOpen: !s.paletteOpen })),
   setPaletteOpen: (open) => set({ paletteOpen: open }),
 
-  setZoom: (zoom) => set({ zoom: Math.max(0.2, Math.min(3, zoom)) }),
+  setZoom: (zoom) => set({ zoom: Math.max(0.2, Math.min(4, zoom)) }),
   setPan: (panX, panY) => set({ panX, panY }),
   resetView: () => set({ zoom: 1, panX: 0, panY: 0 }),
 

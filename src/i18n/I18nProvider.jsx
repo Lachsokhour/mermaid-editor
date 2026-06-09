@@ -51,9 +51,14 @@ export function I18nProvider({ children }) {
     }
   }, [])
 
-  const t = useCallback((key, fallback) => {
-    if (!key) return fallback ?? key
-    const val = flatLocales[locale]?.[key] ?? flatEn[key] ?? fallback ?? key
+  const t = useCallback((key, params) => {
+    if (!key) return params ?? key
+    let val = flatLocales[locale]?.[key] ?? flatEn[key] ?? (typeof params === 'string' ? params : null) ?? key
+    if (typeof params === 'object' && params !== null) {
+      for (const [k, v] of Object.entries(params)) {
+        val = val.replace(`{${k}}`, v)
+      }
+    }
     return val
   }, [locale])
 

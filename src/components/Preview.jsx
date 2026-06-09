@@ -4,6 +4,7 @@ import { useEditorStore } from '../store/editorStore'
 import { useI18n } from '../i18n/I18nProvider'
 import ColorPalette from './ColorPalette'
 import mermaid from 'mermaid'
+import { setRawSvg } from '../utils/export'
 
 function initMermaid(currentTheme, themeColors, locale) {
   const isDark = currentTheme === 'dark'
@@ -47,6 +48,8 @@ export default function Preview() {
   const panRef = useRef({ x: panX, y: panY })
   const zoomRef = useRef(zoom)
   const previewRef = useRef(null)
+  const initialRenderRef = useRef(true)
+  const renderTimerRef = useRef(null)
 
   // Keep refs in sync with store
   useEffect(() => {
@@ -56,32 +59,36 @@ export default function Preview() {
     zoomRef.current = zoom
   }, [zoom])
 
-  // Render diagram
-
-  // Render diagram
+  // Debounced render diagram
   useEffect(() => {
     const code = currentCode?.trim()
     if (!code) { setRendered(''); setError(null); return }
 
-    const id = ++renderIdRef.current
     setLoading(true)
     setError(null)
+    clearTimeout(renderTimerRef.current)
+    renderTimerRef.current = setTimeout(() => {
+      const id = ++renderIdRef.current
 
-    initMermaid(currentTheme, themeColors, locale)
+      initMermaid(currentTheme, themeColors, locale)
 
-    const container = document.getElementById('mermaid-container')
-    if (container) container.innerHTML = ''
+      const container = document.getElementById('mermaid-container')
+      if (container) container.innerHTML = ''
 
-    mermaid.render('mermaid-render-' + id, code).then(({ svg }) => {
-      if (id !== renderIdRef.current) return
-      const patched = patchSvgColors(svg, themeColors, currentTheme)
-      setRendered(patched)
-      setLoading(false)
-    }).catch(err => {
-      if (id !== renderIdRef.current) return
-      setError(err.message || t('common.syntaxError'))
-      setLoading(false)
-    })
+      mermaid.render('mermaid-render-' + id, code).then(({ svg }) => {
+        if (id !== renderIdRef.current) return
+        setRawSvg(svg)
+        const patched = patchSvgColors(svg, themeColors, currentTheme)
+        setRendered(patched)
+        setLoading(false)
+      }).catch(err => {
+        if (id !== renderIdRef.current) return
+        setError(err.message || t('common.syntaxError'))
+        setLoading(false)
+      })
+    }, 150)
+
+    return () => clearTimeout(renderTimerRef.current)
   }, [currentCode, currentTheme, themeColors])
 
   // Insert SVG into container
@@ -90,7 +97,10 @@ export default function Preview() {
     if (!container) return
     if (rendered) {
       container.innerHTML = rendered
-      resetView()
+      if (initialRenderRef.current) {
+        initialRenderRef.current = false
+        resetView()
+      }
     } else {
       container.innerHTML = ''
     }
@@ -110,7 +120,7 @@ export default function Preview() {
     const handler = (e) => {
       e.preventDefault()
       const delta = e.deltaY > 0 ? -0.1 : 0.1
-      zoomRef.current = Math.max(0.2, Math.min(3, zoomRef.current + delta))
+      zoomRef.current = Math.max(0.2, Math.min(4, zoomRef.current + delta))
       const container = document.getElementById('mermaid-container')
       if (container) {
         container.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${zoomRef.current})`
@@ -177,6 +187,7 @@ export default function Preview() {
       initMermaid(currentTheme, themeColors, locale)
       mermaid.render('mermaid-render-' + id, code).then(({ svg }) => {
         if (id !== renderIdRef.current) return
+        setRawSvg(svg)
         const patched = patchSvgColors(svg, themeColors, currentTheme)
         setRendered(patched)
         setLoading(false)
@@ -206,7 +217,7 @@ export default function Preview() {
           </button>
           <span className="text-[11px] text-zinc-500 dark:text-zinc-400 w-8 text-center font-mono">{Math.round(zoom * 100)}%</span>
           <button onClick={() => {
-            zoomRef.current = Math.min(3, zoomRef.current + 0.1)
+            zoomRef.current = Math.min(4, zoomRef.current + 0.1)
             const c = document.getElementById('mermaid-container')
             if (c) c.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${zoomRef.current})`
             setZoom(zoomRef.current)

@@ -1,6 +1,7 @@
 import { History, Share2, Sparkles, PanelLeftClose, PanelLeft, Languages } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
 import { useI18n } from '../i18n/I18nProvider'
+import { showToast } from '../utils/export'
 
 export default function Toolbar({ onShare, onHistory }) {
   const { sidebarOpen, toggleSidebar, activeDiagram, currentCode } = useEditorStore()
@@ -47,13 +48,19 @@ export default function Toolbar({ onShare, onHistory }) {
           <Share2 size={13} />
           <span className="hidden sm:inline">{t('common.share')}</span>
         </button>
-        <button
-          className="flex items-center gap-1.5 px-2 py-1 text-xs rounded-md bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 cursor-pointer"
-          title={t('common.editWithAI')}
-        >
-          <Sparkles size={13} />
-          <span className="hidden sm:inline">{t('common.editWithAI')}</span>
-        </button>
+        <span className="relative inline-flex">
+          <button
+            onClick={() => showToast(t('common.aiComingSoon'), 'info')}
+            className="flex items-center gap-1.5 px-2 py-1 text-xs rounded-md bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 cursor-pointer"
+            title={t('common.editWithAI')}
+          >
+            <Sparkles size={13} />
+            <span className="hidden sm:inline">{t('common.editWithAI')}</span>
+          </button>
+          <span className="absolute -top-1.5 -right-1.5 px-1 py-0.5 rounded-full bg-amber-400 text-[8px] font-bold text-white leading-none">
+            SOON
+          </span>
+        </span>
       </div>
     </div>
   )

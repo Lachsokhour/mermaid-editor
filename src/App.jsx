@@ -9,6 +9,8 @@ import { ShareModal, HistoryModal } from './components/Modal'
 import { useEditorStore } from './store/editorStore'
 import { I18nProvider } from './i18n/I18nProvider'
 
+import { preloadExportFonts } from './utils/export'
+
 export default function App() {
   return (
     <I18nProvider>
@@ -26,6 +28,15 @@ function AppContent() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', currentTheme === 'dark')
   }, [currentTheme])
+
+  // Preload fonts for Khmer/English diagram rendering and export
+  useEffect(() => {
+    Promise.all([
+      document.fonts.load('500 1em "Kantumruy Pro"'),
+      document.fonts.load('400 1em "Rubik"'),
+      preloadExportFonts(),
+    ]).catch(() => {})
+  }, [])
 
   // Load URL params on mount
   useEffect(() => {
