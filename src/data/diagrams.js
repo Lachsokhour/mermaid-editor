@@ -80,3 +80,35 @@ export const DEFAULT_CONFIG = `{
   "theme": "default",
   "themeVariables": {}
 }`
+
+// Per-diagram default color assignments — each diagram type gets its own distinct palette
+export const DEFAULT_COLORS_BY_TYPE = {
+  flowchart:      { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+  sequence:       { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+  class:          { primaryColor: '#10b981', secondaryColor: '#d1fae5', lineColor: '#374151', primaryBorderColor: '#ffffff', primaryTextColor: '#111827' },
+  'entity-relationship': { primaryColor: '#10b981', secondaryColor: '#d1fae5', lineColor: '#374151', primaryBorderColor: '#ffffff', primaryTextColor: '#111827' },
+  state:          { primaryColor: '#f43f5e', secondaryColor: '#ffe4e6', lineColor: '#6b7280', primaryBorderColor: '#ffffff', primaryTextColor: '#1f2937' },
+  gantt:          { primaryColor: '#f59e0b', secondaryColor: '#fef3c7', lineColor: '#525252', primaryBorderColor: '#ffffff', primaryTextColor: '#171717' },
+  kanban:         { primaryColor: '#14b8a6', secondaryColor: '#ccfbf1', lineColor: '#334155', primaryBorderColor: '#ffffff', primaryTextColor: '#0f172a' },
+  timeline:       { primaryColor: '#f59e0b', secondaryColor: '#fef3c7', lineColor: '#525252', primaryBorderColor: '#ffffff', primaryTextColor: '#171717' },
+  'user-journey': { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+  requirement:    { primaryColor: '#10b981', secondaryColor: '#d1fae5', lineColor: '#374151', primaryBorderColor: '#ffffff', primaryTextColor: '#111827' },
+  mindmap:        { primaryColor: '#f43f5e', secondaryColor: '#ffe4e6', lineColor: '#6b7280', primaryBorderColor: '#ffffff', primaryTextColor: '#1f2937' },
+  architecture:   { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+  block:          { primaryColor: '#14b8a6', secondaryColor: '#ccfbf1', lineColor: '#334155', primaryBorderColor: '#ffffff', primaryTextColor: '#0f172a' },
+  c4:             { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+  git:            { primaryColor: '#f43f5e', secondaryColor: '#ffe4e6', lineColor: '#6b7280', primaryBorderColor: '#ffffff', primaryTextColor: '#1f2937' },
+  ishikawa:       { primaryColor: '#f59e0b', secondaryColor: '#fef3c7', lineColor: '#525252', primaryBorderColor: '#ffffff', primaryTextColor: '#171717' },
+  packet:         { primaryColor: '#14b8a6', secondaryColor: '#ccfbf1', lineColor: '#334155', primaryBorderColor: '#ffffff', primaryTextColor: '#0f172a' },
+  pie:            { primaryColor: '#f59e0b', secondaryColor: '#fef3c7', lineColor: '#525252', primaryBorderColor: '#ffffff', primaryTextColor: '#171717' },
+  quadrant:       { primaryColor: '#f43f5e', secondaryColor: '#ffe4e6', lineColor: '#6b7280', primaryBorderColor: '#ffffff', primaryTextColor: '#1f2937' },
+  radar:          { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+  sankey:         { primaryColor: '#14b8a6', secondaryColor: '#ccfbf1', lineColor: '#334155', primaryBorderColor: '#ffffff', primaryTextColor: '#0f172a' },
+  treeview:       { primaryColor: '#10b981', secondaryColor: '#d1fae5', lineColor: '#374151', primaryBorderColor: '#ffffff', primaryTextColor: '#111827' },
+  treemap:        { primaryColor: '#10b981', secondaryColor: '#d1fae5', lineColor: '#374151', primaryBorderColor: '#ffffff', primaryTextColor: '#111827' },
+  venn:           { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+  info:           { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+  eventmodeling:  { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+}
+
+// Available Mermaid themes for the style panel

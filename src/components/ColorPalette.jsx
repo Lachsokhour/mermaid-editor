@@ -13,7 +13,7 @@ const KEY_LABELS = {
 }
 
 export default function ColorPalette() {
-  const { themeColors, paletteOpen, togglePalette, setPaletteOpen, setThemeColors, resetThemeColors, applyPreset } = useEditorStore()
+  const { themeColors, paletteOpen, togglePalette, setPaletteOpen, setThemeColors, resetThemeColors, applyPreset, activeDiagram } = useEditorStore()
   const { t } = useI18n()
 
   const handleChange = (key, value) => {
@@ -39,7 +39,9 @@ export default function ColorPalette() {
           <div className="fixed inset-0 z-40" onClick={() => setPaletteOpen(false)} />
           <div className="absolute right-0 top-full mt-1 z-50 w-52 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">{t('common.colors')}</span>
+              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                {t('diagrams.' + activeDiagram?.id)} {t('common.colors')}
+              </span>
               <button onClick={() => setPaletteOpen(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer">
                 <X size={12} />
               </button>

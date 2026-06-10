@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import DIAGRAMS, { TYPE_DETECTORS, DEFAULT_THEME_COLORS, DEFAULT_CONFIG } from '../data/diagrams'
+import DIAGRAMS, { TYPE_DETECTORS, DEFAULT_THEME_COLORS, DEFAULT_COLORS_BY_TYPE, DEFAULT_CONFIG } from '../data/diagrams'
+import { generatePalette, getDefaultPaletteParams, hexToHsl } from '../utils/palette'
 
 const LS_KEY = 'mermaid-editor-state'
 
@@ -21,12 +22,59 @@ function saveToStorage(state) {
       history: state.history.slice(-30),
       activeDiagramId: state.activeDiagram?.id,
       editorWidth: state.editorPanelWidth,
-      themeColors: state.themeColors,
+      diagramThemeColors: state.diagramThemeColors,
+      diagramPaletteParams: state.diagramPaletteParams,
     }))
   } catch {}
 }
 
 const stored = loadFromStorage()
+
+function getDefaultColorsFor(id) {
+  return { ...(DEFAULT_COLORS_BY_TYPE[id] || DEFAULT_THEME_COLORS) }
+}
+
+// Migrate old single themeColors → per-diagram map, fill any gaps
+let initialDiagramColors
+if (stored?.diagramThemeColors) {
+  initialDiagramColors = { ...stored.diagramThemeColors }
+  DIAGRAMS.forEach(d => {
+    if (!initialDiagramColors[d.id]) {
+      initialDiagramColors[d.id] = getDefaultColorsFor(d.id)
+    }
+  })
+} else if (stored?.themeColors) {
+  initialDiagramColors = {}
+  DIAGRAMS.forEach(d => {
+    initialDiagramColors[d.id] = { ...stored.themeColors }
+  })
+} else {
+  initialDiagramColors = {}
+  DIAGRAMS.forEach(d => {
+    initialDiagramColors[d.id] = getDefaultColorsFor(d.id)
+  })
+}
+
+const initialActiveId = stored?.activeDiagramId
+  ? (DIAGRAMS.find(d => d.id === stored.activeDiagramId) || DIAGRAMS[0]).id
+  : DIAGRAMS[0].id
+
+function getPaletteFor(state, diagramId) {
+  if (state.diagramPaletteParams[diagramId]) {
+    return state.diagramPaletteParams[diagramId]
+  }
+  const colors = state.diagramThemeColors?.[diagramId] || getDefaultColorsFor(diagramId)
+  const hsl = hexToHsl(colors.primaryColor)
+  return { ...getDefaultPaletteParams(), h: Math.round(hsl.h) }
+}
+
+const initialPaletteParams = (() => {
+  const saved = stored?.diagramPaletteParams?.[initialActiveId]
+  if (saved) return saved
+  const colors = initialDiagramColors[initialActiveId] || getDefaultColorsFor(initialActiveId)
+  const hsl = hexToHsl(colors.primaryColor)
+  return { ...getDefaultPaletteParams(), h: Math.round(hsl.h) }
+})()
 
 export const useEditorStore = create((set, get) => ({
   // State
@@ -43,13 +91,20 @@ export const useEditorStore = create((set, get) => ({
   editorPanelWidth: stored?.editorWidth ?? null,
   history: stored?.history ?? [],
   historyIndex: -1,
-  themeColors: stored?.themeColors ?? { ...DEFAULT_THEME_COLORS },
+  diagramThemeColors: initialDiagramColors,
+  themeColors: initialDiagramColors[initialActiveId] || getDefaultColorsFor(initialActiveId),
+  diagramPaletteParams: stored?.diagramPaletteParams ?? {},
+  paletteParams: initialPaletteParams,
   toasts: [],
   sidebarOpen: true,
   paletteOpen: false,
 
   // Actions
-  setActiveDiagram: (diagram) => set({ activeDiagram: diagram, paletteOpen: false }),
+  setActiveDiagram: (diagram) => set(s => {
+    const colors = s.diagramThemeColors[diagram.id] || getDefaultColorsFor(diagram.id)
+    const params = getPaletteFor(s, diagram.id)
+    return { activeDiagram: diagram, themeColors: colors, paletteParams: params, paletteOpen: false }
+  }),
 
   setCurrentCode: (code) => {
     const state = get()
@@ -89,38 +144,71 @@ export const useEditorStore = create((set, get) => ({
   },
 
   setThemeColors: (colors) => {
-    set({ themeColors: { ...get().themeColors, ...colors } })
+    const state = get()
+    const id = state.activeDiagram?.id
+    if (!id) return
+    const current = state.diagramThemeColors[id] || getDefaultColorsFor(id)
+    const merged = { ...current, ...colors }
+    set({
+      diagramThemeColors: { ...state.diagramThemeColors, [id]: merged },
+      themeColors: merged,
+    })
     saveToStorage(get())
   },
 
   resetThemeColors: () => {
-    set({ themeColors: { ...DEFAULT_THEME_COLORS } })
+    const state = get()
+    const id = state.activeDiagram?.id
+    if (!id) return
+    const defaults = getDefaultColorsFor(id)
+    set({
+      diagramThemeColors: { ...state.diagramThemeColors, [id]: defaults },
+      themeColors: defaults,
+    })
     saveToStorage(get())
   },
 
   applyPreset: (colors) => {
-    set({ themeColors: { ...colors } })
+    const state = get()
+    const id = state.activeDiagram?.id
+    if (!id) return
+    set({
+      diagramThemeColors: { ...state.diagramThemeColors, [id]: { ...colors } },
+      themeColors: { ...colors },
+    })
     saveToStorage(get())
   },
 
-  addToast: (message, type = 'info') => {
-    const id = Date.now()
-    set(s => ({ toasts: [...s.toasts, { id, message, type }] }))
-    setTimeout(() => {
-      set(s => ({ toasts: s.toasts.filter(t => t.id !== id) }))
-    }, 3000)
+  setPaletteParams: (params) => {
+    const state = get()
+    const id = state.activeDiagram?.id
+    if (!id) return
+    const merged = { ...getPaletteFor(state, id), ...params }
+    const generated = generatePalette(merged.h, merged.s, merged.l, merged.harmony, merged)
+    set({
+      diagramPaletteParams: { ...state.diagramPaletteParams, [id]: merged },
+      paletteParams: merged,
+      diagramThemeColors: { ...state.diagramThemeColors, [id]: generated },
+      themeColors: generated,
+    })
+    saveToStorage(get())
   },
 
   selectDiagram: (id, silent = false) => {
     const d = DIAGRAMS.find(x => x.id === id)
     if (!d) return
+    const state = get()
+    const diagramColors = state.diagramThemeColors[id] || getDefaultColorsFor(id)
+    const params = getPaletteFor(state, id)
     set({
       activeDiagram: d,
-      currentCode: silent ? get().currentCode : d.code,
+      themeColors: diagramColors,
+      paletteParams: params,
+      currentCode: silent ? state.currentCode : d.code,
       paletteOpen: false,
     })
     if (!silent) {
-      const history = [...get().history, { code: get().currentCode, ts: Date.now() }]
+      const history = [...state.history, { code: state.currentCode, ts: Date.now() }]
       set({ history })
     }
     saveToStorage(get())
@@ -133,13 +221,23 @@ export const useEditorStore = create((set, get) => ({
         if (d) {
           const state = get()
           if (state.activeDiagram?.id !== d.id) {
-            set({ activeDiagram: d })
+            const diagramColors = state.diagramThemeColors[d.id] || getDefaultColorsFor(d.id)
+            const params = getPaletteFor(state, d.id)
+            set({ activeDiagram: d, themeColors: diagramColors, paletteParams: params })
           }
           return d
         }
       }
     }
     return null
+  },
+
+  addToast: (message, type = 'info') => {
+    const id = Date.now()
+    set(s => ({ toasts: [...s.toasts, { id, message, type }] }))
+    setTimeout(() => {
+      set(s => ({ toasts: s.toasts.filter(t => t.id !== id) }))
+    }, 3000)
   },
 
   restoreFromHistory: (entry) => {

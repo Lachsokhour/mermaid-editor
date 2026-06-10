@@ -1,14 +1,22 @@
-import DIAGRAMS from '../data/diagrams'
+import DIAGRAMS, { DEFAULT_COLORS_BY_TYPE } from '../data/diagrams'
 import { useEditorStore } from '../store/editorStore'
 import * as LucideIcons from 'lucide-react'
 import { useI18n } from '../i18n/I18nProvider'
 
 export default function Sidebar() {
-  const { activeDiagram, sidebarOpen, selectDiagram, currentCode, setCurrentCode, detectType } = useEditorStore()
+  const { activeDiagram, sidebarOpen, selectDiagram, diagramThemeColors } = useEditorStore()
   const { t } = useI18n()
 
   const handleSelect = (id) => {
     selectDiagram(id)
+  }
+
+  const hasCustomColor = (id) => {
+    const saved = diagramThemeColors[id]
+    if (!saved) return false
+    const defaults = DEFAULT_COLORS_BY_TYPE[id]
+    if (!defaults) return false
+    return saved.primaryColor !== defaults.primaryColor
   }
 
   return (
@@ -39,7 +47,13 @@ export default function Sidebar() {
               }`}
             >
               {Icon && <Icon size={14} className="shrink-0" />}
-              <span className="truncate">{t('diagrams.' + d.id)}</span>
+              <span className="truncate flex-1">{t('diagrams.' + d.id)}</span>
+              {hasCustomColor(d.id) && (
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: diagramThemeColors[d.id]?.primaryColor || '#6366f1' }}
+                />
+              )}
             </button>
           )
         })}

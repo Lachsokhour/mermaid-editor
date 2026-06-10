@@ -3,6 +3,7 @@ import { Minus, Plus, Maximize, Minimize, Expand } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
 import { useI18n } from '../i18n/I18nProvider'
 import ColorPalette from './ColorPalette'
+import StylePanel from './StylePanel'
 import mermaid from 'mermaid'
 import { setRawSvg } from '../utils/export'
 
@@ -274,6 +275,10 @@ export default function Preview() {
         {!currentCode?.trim() && !loading && (
           <span className="text-xs text-zinc-400 dark:text-zinc-500">{t('common.enterCode')}</span>
         )}
+
+        <div className="absolute bottom-3 right-3 z-20">
+          <StylePanel />
+        </div>
       </div>
     </div>
   )
