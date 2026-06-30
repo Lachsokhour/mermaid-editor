@@ -121,7 +121,7 @@ export default function Preview() {
     const handler = (e) => {
       e.preventDefault()
       const delta = e.deltaY > 0 ? -0.1 : 0.1
-      zoomRef.current = Math.max(0.2, Math.min(4, zoomRef.current + delta))
+      zoomRef.current = Math.max(0.2, Math.min(10, zoomRef.current + delta))
       const container = document.getElementById('mermaid-container')
       if (container) {
         container.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${zoomRef.current})`
@@ -218,7 +218,7 @@ export default function Preview() {
           </button>
           <span className="text-[11px] text-zinc-500 dark:text-zinc-400 w-8 text-center font-mono">{Math.round(zoom * 100)}%</span>
           <button onClick={() => {
-            zoomRef.current = Math.min(4, zoomRef.current + 0.1)
+            zoomRef.current = Math.min(10, zoomRef.current + 0.1)
             const c = document.getElementById('mermaid-container')
             if (c) c.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${zoomRef.current})`
             setZoom(zoomRef.current)
