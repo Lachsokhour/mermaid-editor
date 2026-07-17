@@ -9,11 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.62.2",
+    "lucide-react": "^0.400",
     "mermaid": "^11",
     "react": "^19",
     "react-dom": "^19",
-    "zustand": "^5",
-    "lucide-react": "^0.400"
+    "zustand": "^5"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4",
