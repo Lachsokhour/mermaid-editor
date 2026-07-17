@@ -299,19 +299,23 @@ async function svgToCanvas(svgEl, scale = 3) {
     })
   }
 
+  async function drawAndCheck(img) {
+    ctx.drawImage(img, padding * scale, padding * scale, width * scale, height * scale)
+    try { canvas.toDataURL(); return canvas }
+    catch { throw new Error('canvas tainted after drawImage') }
+  }
+
   try {
     const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' })
     const img = await loadBlobImage(blob)
-    ctx.drawImage(img, padding * scale, padding * scale, width * scale, height * scale)
-    return canvas
+    return await drawAndCheck(img)
   } catch (e) {
     console.warn('blob: URI failed, retrying with data: URI —', e.message)
   }
 
   try {
     const img = await loadDataImage(xml)
-    ctx.drawImage(img, padding * scale, padding * scale, width * scale, height * scale)
-    return canvas
+    return await drawAndCheck(img)
   } catch (e) {
     console.warn('data: URI also failed —', e.message)
   }
