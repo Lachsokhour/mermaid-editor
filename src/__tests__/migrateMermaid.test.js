@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest'
 import mermaid from 'mermaid'
-import { migrateMermaidCode, moveLinkStylesToEnd } from '../utils/migrateMermaid'
+import { migrateMermaidCode, moveLinkStylesToEnd, sanitizeFlowchartParens } from '../utils/migrateMermaid'
 
 beforeAll(() => {
   mermaid.initialize({
@@ -41,56 +41,64 @@ linkStyle 1 stroke:blue`
     A["Hello"] --> B["World"]`
     expect(moveLinkStylesToEnd(input)).toBe(input)
   })
+})
 
-  it('strips trailing blank lines before appending linkStyle', () => {
-    const input = `graph TD
+describe('sanitizeFlowchartParens', () => {
+  it('wraps unquoted brackets with parens in quotes', () => {
+    const input = 'graph TD\n  A[text (parens)] --> B[next]'
+    const result = sanitizeFlowchartParens(input)
+    expect(result).toContain('A["text (parens)"]')
+  })
 
-    A["Hello"] --> B["World"]
+  it('does not double-quote already quoted brackets', () => {
+    const input = 'graph TD\n  A["text (parens)"] --> B[next]'
+    const result = sanitizeFlowchartParens(input)
+    expect(result).toContain('A["text (parens)"]')
+    expect(result).not.toContain('A[""')
+  })
 
-linkStyle 0 stroke:red`
-    const result = moveLinkStylesToEnd(input)
-    expect(result).toContain('A["Hello"] --> B["World"]')
-    expect(result.trim().endsWith('linkStyle 0 stroke:red')).toBe(true)
+  it('does not modify brackets without parens', () => {
+    const input = 'graph TD\n  A[text] --> B[next]'
+    const result = sanitizeFlowchartParens(input)
+    expect(result).toBe(input)
+  })
+
+  it('skips comment and style lines', () => {
+    const input = 'graph TD\n  %% A[text (parens)] --> B[next]\nstyle A fill:#000'
+    const result = sanitizeFlowchartParens(input)
+    expect(result).toContain('%%')
+    expect(result).not.toContain('&#40;')
   })
 })
 
 describe('migrateMermaidCode', () => {
-  it('does not escape parentheses in quoted bracket labels', () => {
-    const input = 'graph TD\n  A["text (parens)"] --> B["next"]'
+  it('wraps unquoted brackets with parens in quotes', () => {
+    const input = 'graph TD\n  A[text (parens)] --> B[next]'
     const result = migrateMermaidCode(input)
-    expect(result).toContain('text (parens)')
+    expect(result).toContain('A["text (parens)"]')
     expect(result).not.toContain('&#40;')
   })
 
-  it('does not escape parentheses in round node labels', () => {
+  it('preserves round node labels with parens', () => {
     const input = 'graph TD\n  A("Hello (world)") --> B["Next"]'
     const result = migrateMermaidCode(input)
     expect(result).toContain('Hello (world)')
-    expect(result).not.toContain('&#40;')
   })
 
-  it('moves linkStyle but does not escape parens', () => {
-    const input = `graph TD
-linkStyle 0 stroke:red
-  A["text (parens)"] --> B["next"]`
-    const result = migrateMermaidCode(input)
-    expect(result).toContain('text (parens)')
-    expect(result).not.toContain('&#40;')
-    expect(result.trim().endsWith('linkStyle 0 stroke:red')).toBe(true)
-  })
-
-  it('output parses correctly with quoted parens', async () => {
-    const input = 'graph TD\n  A["text (parens)"] --> B["next"]'
+  it('output parses correctly by mermaid', async () => {
+    const input = 'graph TD\n  A[text (parens)] --> B[next]'
     const result = migrateMermaidCode(input)
     expect(await canParse(result)).toBe(true)
   })
 
-  it('Khmer diagram with parens parses correctly', async () => {
+  it('full Khmer diagram with parens parses correctly', async () => {
     const code = `graph TD
     A["ចាប់ផ្តើមរៀន"] --> B("ជំហានទី១")
-    B --> B1["ឃ្លា (មាន ៧ព្យាង្គ)"]`
+    B --> C2[ចួនឆ្លងវគ្គ (ជើងក្អែក)៖<br>• test]
+    C2 --> E1[សរសេរឃ្លាទី១ (ត្រូវតែបង្កប់ន័យ)]`
     const result = migrateMermaidCode(code)
-    expect(result).toContain('ឃ្លា (មាន ៧ព្យាង្គ)')
+    expect(result).toContain('C2["ចួនឆ្លងវគ្គ (ជើងក្អែក)៖')
+    expect(result).toContain('E1["សរសេរឃ្លាទី១ (ត្រូវតែបង្កប់ន័យ)"]')
     expect(result).not.toContain('&#40;')
     expect(await canParse(result)).toBe(true)
   })

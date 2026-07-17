@@ -1,3 +1,20 @@
+function quoteBracketParens(line) {
+  const trimmed = line.trim()
+  if (trimmed.startsWith('%%') || trimmed.startsWith('style ') || trimmed.startsWith('linkStyle ') || trimmed.startsWith('classDef ') || trimmed.startsWith('class ') || trimmed.startsWith('click ')) {
+    return line
+  }
+  return line.replace(/\[([^\]"]*)\]/g, (fullMatch, inner) => {
+    if (inner.includes('(') || inner.includes(')')) {
+      return '["' + inner + '"]'
+    }
+    return fullMatch
+  })
+}
+
+function sanitizeFlowchartParens(code) {
+  return code.split('\n').map(line => quoteBracketParens(line)).join('\n')
+}
+
 function moveLinkStylesToEnd(code) {
   const lines = code.split('\n')
   const linkStyleLines = []
@@ -17,7 +34,9 @@ function moveLinkStylesToEnd(code) {
 }
 
 function migrateMermaidCode(code) {
-  return moveLinkStylesToEnd(code)
+  let result = sanitizeFlowchartParens(code)
+  result = moveLinkStylesToEnd(result)
+  return result
 }
 
-export { moveLinkStylesToEnd, migrateMermaidCode }
+export { sanitizeFlowchartParens, moveLinkStylesToEnd, migrateMermaidCode }
