@@ -35,7 +35,7 @@ export default function Sidebar() {
       </div>
       <div className="flex-1 overflow-y-auto">
         {filtered.length === 0 && (
-          <p className="text-[10px] text-zinc-400 text-center py-4">No diagrams match</p>
+          <p className="text-[10px] text-zinc-400 text-center py-4">{t('common.noMatch')}</p>
         )}
         {filtered.map(d => {
           const Icon = LucideIcons[d.icon]

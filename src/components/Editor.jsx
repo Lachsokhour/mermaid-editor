@@ -255,6 +255,9 @@ function StyleRow({ label, styles, swatches = ['fill', 'stroke'], preview, onUpd
   return (
     <div
       onClick={onSelect ? () => onSelect(styles) : undefined}
+      onKeyDown={onSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(styles) } } : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      role={onSelect ? 'button' : undefined}
       className={`flex items-center gap-1.5 p-2 rounded-md border bg-zinc-50 dark:bg-zinc-900 group ${
         active
           ? 'border-indigo-400 dark:border-indigo-500 ring-1 ring-indigo-400 dark:ring-indigo-500'

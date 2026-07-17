@@ -12,6 +12,16 @@ import { setRawSvg } from '../utils/export'
 import { addClickHandlers, clearHighlights, highlightElement, CLICK_SELECTORS } from '../utils/svgInspector'
 import { extractEdgeIndex } from '../utils/styleParser'
 import { migrateMermaidCode } from '../utils/migrateMermaid'
+import { tryRender, hasKhmerStadiumNode } from '../utils/fixDiagram'
+
+function renderErrorMsg(err, code) {
+  let msg = err?.message || ''
+  if (!msg) msg = 'Syntax error'
+  if (msg.includes('Invalid character') && hasKhmerStadiumNode(code)) {
+    msg += ' — Try using rectangle nodes ["..."] instead of stadium nodes ([...]) for Khmer text'
+  }
+  return msg
+}
 
 function initMermaid(currentTheme, themeColors, themeCSS) {
   const isDark = currentTheme === 'dark'
@@ -78,14 +88,14 @@ export default function Preview() {
       if (container) container.innerHTML = ''
 
       const safeCode = migrateMermaidCode(code)
-      mermaid.render('mermaid-render-' + id, safeCode).then(({ svg }) => {
+      tryRender(mermaid, 'mermaid-render-' + id, safeCode).then(({ svg }) => {
         if (id !== renderIdRef.current) return
         setRawSvg(svg)
         setRendered(svg)
         setLoading(false)
       }).catch(err => {
         if (id !== renderIdRef.current) return
-        setError(err.message || t('common.syntaxError'))
+        setError(renderErrorMsg(err, code))
         setLoading(false)
       })
     }, 150)
@@ -225,14 +235,14 @@ export default function Preview() {
       setError(null)
       initMermaid(currentTheme, themeColors, themeCSS)
       const safeCode = migrateMermaidCode(code)
-      mermaid.render('mermaid-render-' + id, safeCode).then(({ svg }) => {
+      tryRender(mermaid, 'mermaid-render-' + id, safeCode).then(({ svg }) => {
         if (id !== renderIdRef.current) return
         setRawSvg(svg)
         setRendered(svg)
         setLoading(false)
       }).catch(err => {
         if (id !== renderIdRef.current) return
-        setError(err.message || t('common.syntaxError'))
+        setError(renderErrorMsg(err, code))
         setLoading(false)
       })
     }
