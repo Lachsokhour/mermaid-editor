@@ -226,16 +226,15 @@ export function stripForeignObjects(svg) {
   return result
 }
 
-function getCanvasSvgData() {
+function getCanvasSvgData(embedFontsFlag = true) {
   const raw = _rawSvgCache
-  if (raw) {
-    return embedFonts(raw)
-  }
+  const fn = embedFontsFlag ? embedFonts : (s) => s
+  if (raw) return fn(raw)
   const svgEl = getSvgEl()
   if (!svgEl) return null
   const clone = svgEl.cloneNode(true)
   const s = new XMLSerializer().serializeToString(clone)
-  return embedFonts(s)
+  return fn(s)
 }
 
 function sanitizeSvgXml(xml) {
@@ -257,7 +256,7 @@ async function svgToCanvas(svgEl, scale = 3) {
     throw new Error(`Canvas too large: ${cw}x${ch}`)
   }
 
-  const svgData = getCanvasSvgData()
+  const svgData = getCanvasSvgData(false)
   if (!svgData) throw new Error('No SVG data available')
 
   let xml = svgData
