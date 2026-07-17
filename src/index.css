@@ -9,6 +9,7 @@
 
 :root:lang(km) {
   --font-sans: "Kantumruy Pro", "Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Kantumruy Pro", "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
 }
 
 * { box-sizing: border-box; }

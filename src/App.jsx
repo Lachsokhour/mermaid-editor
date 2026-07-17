@@ -29,11 +29,17 @@ function AppContent() {
     document.documentElement.classList.toggle('dark', currentTheme === 'dark')
   }, [currentTheme])
 
-  // Preload fonts for Khmer/English diagram rendering and export
+  // Preload fonts for diagram rendering and export
   useEffect(() => {
     Promise.all([
-      document.fonts.load('500 1em "Kantumruy Pro"'),
       document.fonts.load('400 1em "Rubik"'),
+      document.fonts.load('500 1em "Rubik"'),
+      document.fonts.load('600 1em "Rubik"'),
+      document.fonts.load('700 1em "Rubik"'),
+      document.fonts.load('400 1em "Kantumruy Pro"'),
+      document.fonts.load('500 1em "Kantumruy Pro"'),
+      document.fonts.load('600 1em "Kantumruy Pro"'),
+      document.fonts.load('700 1em "Kantumruy Pro"'),
       preloadExportFonts(),
     ]).catch(() => {})
   }, [])

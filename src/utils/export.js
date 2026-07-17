@@ -1,15 +1,21 @@
 import { useEditorStore } from '../store/editorStore'
 
-const FONT_STYLE = `<style>
-@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&amp;family=Rubik:wght@400;500;600;700&amp;display=swap');
-</style>`
+function getFontUrl(locale) {
+  const base = 'https://fonts.googleapis.com/css2?'
+  const rubik = 'family=Rubik:wght@400;500;600;700'
+  const kantumruy = 'family=Kantumruy+Pro:wght@400;500;600;700'
+  if (locale === 'kh') return `${base}${kantumruy}&${rubik}&display=swap`
+  return `${base}${rubik}&display=swap`
+}
 
 let _fontFaceCss = null
+let _fontFaceLocale = null
 
-export async function preloadExportFonts() {
-  if (_fontFaceCss) return
+export async function preloadExportFonts(locale) {
+  const loc = locale || 'en'
+  if (_fontFaceCss && _fontFaceLocale === loc) return
   try {
-    const cssUrl = 'https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap'
+    const cssUrl = getFontUrl(loc)
     const res = await fetch(cssUrl)
     const css = await res.text()
 
@@ -28,16 +34,23 @@ export async function preloadExportFonts() {
 
     let i = 0
     _fontFaceCss = css.replace(urlRegex, () => `url(${dataUris[i++]})`)
+    _fontFaceLocale = loc
   } catch (e) {
     console.warn('Failed to preload export fonts:', e)
   }
 }
 
+function getExportLocale() {
+  try { return document.documentElement.lang === 'km' ? 'kh' : 'en' } catch { return 'en' }
+}
+
 function getFontStyle() {
-  if (_fontFaceCss) {
+  const loc = getExportLocale()
+  if (_fontFaceCss && _fontFaceLocale === loc) {
     return `<style>${_fontFaceCss}</style>`
   }
-  return FONT_STYLE
+  const url = getFontUrl(loc)
+  return `<style>@import url('${url}');</style>`
 }
 
 export function copyToClipboard(text, successMsg) {

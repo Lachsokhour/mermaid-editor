@@ -13,19 +13,18 @@ import { addClickHandlers, clearHighlights, highlightElement, CLICK_SELECTORS } 
 import { extractEdgeIndex } from '../utils/styleParser'
 import { migrateMermaidCode } from '../utils/migrateMermaid'
 
-function initMermaid(currentTheme, themeColors, locale, themeCSS) {
+function initMermaid(currentTheme, themeColors, themeCSS) {
   const isDark = currentTheme === 'dark'
-  const font = locale === 'kh'
-    ? '"Kantumruy Pro", "Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    : '"Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  const fontFamily = '"Kantumruy Pro", "Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+  const fontCss = `foreignObject div, foreignObject span, foreignObject p { font-family: ${fontFamily} !important; }\n`
   mermaid.mermaidAPI?.globalReset?.()
   mermaid.initialize({
     startOnLoad: false,
     theme: 'base',
     maxTextSize: 50000,
     securityLevel: 'loose',
-    fontFamily: font,
-    themeCSS: themeCSS || undefined,
+    fontFamily,
+    themeCSS: fontCss + (themeCSS || ''),
     themeVariables: {
       darkMode: isDark,
       background: isDark ? '#1a1b1e' : '#ffffff',
@@ -41,7 +40,7 @@ function initMermaid(currentTheme, themeColors, locale, themeCSS) {
 
 export default function Preview() {
   const { currentCode, currentTheme, gridVisible, zoom, panX, panY, themeColors, themeCSS, selectedElement, selectElement, clearSelection, setZoom, setPan, resetView } = useEditorStore()
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
   const containerRef = useRef(null)
   const [rendered, setRendered] = useState('')
   const [loading, setLoading] = useState(false)
@@ -73,7 +72,7 @@ export default function Preview() {
     renderTimerRef.current = setTimeout(() => {
       const id = ++renderIdRef.current
 
-      initMermaid(currentTheme, themeColors, locale, themeCSS)
+      initMermaid(currentTheme, themeColors, themeCSS)
 
       const container = document.getElementById('mermaid-container')
       if (container) container.innerHTML = ''
@@ -224,7 +223,7 @@ export default function Preview() {
       const id = ++renderIdRef.current
       setLoading(true)
       setError(null)
-      initMermaid(currentTheme, themeColors, locale, themeCSS)
+      initMermaid(currentTheme, themeColors, themeCSS)
       const safeCode = migrateMermaidCode(code)
       mermaid.render('mermaid-render-' + id, safeCode).then(({ svg }) => {
         if (id !== renderIdRef.current) return
