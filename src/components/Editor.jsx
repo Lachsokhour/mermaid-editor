@@ -150,7 +150,7 @@ export default function Editor() {
 
       {/* Docs Tab */}
       {activeTab === 'docs' && (
-        <div className="flex-1 p-6 overflow-y-auto text-sm text-zinc-600 dark:text-zinc-400 space-y-4">
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto text-sm text-zinc-600 dark:text-zinc-400 space-y-4">
           <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
             <AlertTriangle size={14} />
             <span className="font-medium">{t('common.gettingStarted')}</span>

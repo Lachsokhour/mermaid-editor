@@ -246,7 +246,7 @@ export default function Preview() {
       {/* Preview Header */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 shrink-0">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{t('common.preview')}</span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap justify-end">
           <button onClick={() => {
             zoomRef.current = Math.max(0.2, zoomRef.current - 0.1)
             const c = document.getElementById('mermaid-container')
@@ -283,7 +283,7 @@ export default function Preview() {
       {/* Preview Canvas */}
       <div
         ref={previewRef}
-        className={`flex-1 flex items-center justify-center p-6 overflow-hidden relative ${
+        className={`flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden relative ${
           gridVisible ? 'preview-grid' : ''
         } cursor-grab`}
         onMouseDown={handleMouseDown}
@@ -304,7 +304,7 @@ export default function Preview() {
         />
 
         {error && (
-          <div className="absolute bottom-4 left-4 right-4 z-10">
+          <div className="absolute bottom-12 left-3 right-3 z-10">
             <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs rounded-lg px-3 py-2">
               {error}
             </div>
@@ -315,7 +315,7 @@ export default function Preview() {
           <span className="text-xs text-zinc-400 dark:text-zinc-500">{t('common.enterCode')}</span>
         )}
 
-        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2">
+        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5">
           <ThemeCSSEditor />
           <ClassManager />
           <StylePanel />

@@ -67,17 +67,19 @@ function AppContent() {
     return () => document.removeEventListener('keydown', handler)
   }, [toggleSidebar])
 
-  // Resize handler
+  // Resize handler (mouse + touch)
   const handleResizeStart = useCallback((e) => {
     e.preventDefault()
-    const startX = e.clientX
+    const startX = e.clientX ?? e.touches?.[0]?.clientX
     const editor = document.getElementById('editorPanel')
     const parent = editor?.parentElement
-    if (!editor || !parent) return
+    if (!editor || !parent || startX == null) return
     const startWidth = editor.offsetWidth
 
+    const getX = (e) => e.clientX ?? e.touches?.[0]?.clientX ?? 0
+
     const onMove = (e) => {
-      const diff = e.clientX - startX
+      const diff = getX(e) - startX
       const total = parent.offsetWidth
       const w = Math.max(total * 0.2, Math.min(total * 0.8, startWidth + diff))
       editor.style.flex = 'none'
@@ -87,12 +89,16 @@ function AppContent() {
     const onUp = () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
+      document.removeEventListener('touchmove', onMove)
+      document.removeEventListener('touchend', onUp)
       const w = editor.offsetWidth
       setEditorPanelWidth(w)
     }
 
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
+    document.addEventListener('touchmove', onMove, { passive: true })
+    document.addEventListener('touchend', onUp)
   }, [setEditorPanelWidth])
 
   // Restore editor width from storage
@@ -115,6 +121,7 @@ function AppContent() {
         <div
           className="resize-handle"
           onMouseDown={handleResizeStart}
+          onTouchStart={handleResizeStart}
         />
         <div className="flex-1 flex flex-col min-w-0">
           <Preview />

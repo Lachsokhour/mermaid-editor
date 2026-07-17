@@ -29,37 +29,37 @@ export default function BottomBar() {
           onClick={handleCopyMarkdown}
           className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
         >
-          <Copy size={12} /> {t('common.copyMarkdown')}
+          <Copy size={12} /> <span className="hidden sm:inline">{t('common.copyMarkdown')}</span>
         </button>
         <button
           onClick={copyImage}
           className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
         >
-          <Image size={12} /> {t('common.copyImage')}
+          <Image size={12} /> <span className="hidden sm:inline">{t('common.copyImage')}</span>
         </button>
         <button
           onClick={downloadSVG}
           className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
         >
-          <Download size={12} /> {t('common.svg')}
+          <Download size={12} /> <span className="hidden sm:inline">{t('common.svg')}</span>
         </button>
         <button
           onClick={downloadRaw}
           className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
         >
-          <FileCode size={12} /> {t('common.raw')}
+          <FileCode size={12} /> <span className="hidden sm:inline">{t('common.raw')}</span>
         </button>
         <button
           onClick={downloadPNG}
           className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
         >
-          <Download size={12} /> {t('common.png')}
+          <Download size={12} /> <span className="hidden sm:inline">{t('common.png')}</span>
         </button>
         <button
           onClick={handleCopyLink}
           className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
         >
-          <Copy size={12} /> {t('common.link')}
+          <Copy size={12} /> <span className="hidden sm:inline">{t('common.link')}</span>
         </button>
       </div>
 
