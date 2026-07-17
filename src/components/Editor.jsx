@@ -4,6 +4,7 @@ import { useEditorStore } from '../store/editorStore'
 import { showToast } from '../utils/export'
 import { useI18n } from '../i18n/I18nProvider'
 import { parseClassDefs, parseClassAssignments, parseInlineStyles, parseLinkStyles, styleObjectToString, parseStyleString, DEFAULT_CLASS_STYLE } from '../utils/styleParser'
+import StylingGuide from './StylingGuide'
 
 const TABS = [
   { id: 'code', icon: Code2 },
@@ -189,6 +190,10 @@ export default function Editor() {
               ))}
             </div>
           </div>
+
+          <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
+            <StylingGuide />
+          </div>
         </div>
       )}
     </div>
@@ -196,14 +201,21 @@ export default function Editor() {
 }
 
 function StyleTab() {
-  const { currentCode, updateClassDef, removeClassDef, removeElementStyle, removeLinkStyle } = useEditorStore()
+  const { currentCode, updateClassDef, removeClassDef, removeElementStyle, removeLinkStyle, updateLinkStyle, getCapabilities } = useEditorStore()
+  const { t } = useI18n()
   const classDefs = parseClassDefs(currentCode)
   const classAssignments = parseClassAssignments(currentCode)
   const inlineStyles = parseInlineStyles(currentCode)
   const linkStyles = parseLinkStyles(currentCode)
+  const caps = getCapabilities()
 
   const [newClassName, setNewClassName] = useState('')
   const [newClassStyle, setNewClassStyle] = useState(DEFAULT_CLASS_STYLE)
+
+  const [edgeIndex, setEdgeIndex] = useState('0')
+  const [edgeStroke, setEdgeStroke] = useState('#94a3b8')
+  const [edgeWidth, setEdgeWidth] = useState('2px')
+  const [edgeDash, setEdgeDash] = useState('')
 
   const handleAddClassDef = () => {
     if (!newClassName.trim()) return
@@ -211,6 +223,16 @@ function StyleTab() {
     updateClassDef(newClassName.trim(), styles)
     setNewClassName('')
     setNewClassStyle(DEFAULT_CLASS_STYLE)
+  }
+
+  const handleAddEdgeStyle = () => {
+    const idx = parseInt(edgeIndex)
+    if (isNaN(idx) || idx < 0) return
+    const styles = { stroke: edgeStroke }
+    if (edgeWidth && edgeWidth !== '2px') styles['stroke-width'] = edgeWidth
+    if (edgeDash) styles['stroke-dasharray'] = edgeDash
+    updateLinkStyle(idx, styles)
+    setEdgeIndex(String(idx + 1))
   }
 
   return (
@@ -314,12 +336,14 @@ function StyleTab() {
       )}
 
       {/* Edge Styles */}
-      {Object.keys(linkStyles).length > 0 && (
-        <div>
-          <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
-            Edge Styles ({Object.keys(linkStyles).length})
-          </h3>
-          <div className="space-y-1">
+      <div>
+        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
+          {t('styleEditor.edge')} {t('common.styles')} ({Object.keys(linkStyles).length})
+        </h3>
+
+        {/* Existing edge styles */}
+        {Object.keys(linkStyles).length > 0 && (
+          <div className="space-y-1 mb-2">
             {Object.entries(linkStyles).map(([index, styles]) => (
               <div key={index} className="flex items-center gap-2 p-1.5 rounded-md bg-zinc-50 dark:bg-zinc-900 group">
                 <svg width="20" height="8" viewBox="0 0 20 8" className="shrink-0">
@@ -343,8 +367,83 @@ function StyleTab() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Add edge style */}
+        {caps.edgeStyle && (
+          <div className="p-2 rounded-md bg-zinc-50 dark:bg-zinc-900 space-y-2">
+            <div className="flex items-center gap-1.5">
+              <label className="text-[9px] text-zinc-500 dark:text-zinc-400 w-8">#</label>
+              <input
+                type="number"
+                min="0"
+                value={edgeIndex}
+                onChange={e => setEdgeIndex(e.target.value)}
+                className="w-12 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400"
+              />
+              <input
+                type="color"
+                value={edgeStroke}
+                onChange={e => setEdgeStroke(e.target.value)}
+                className="w-7 h-7 p-0.5 border border-zinc-300 dark:border-zinc-600 rounded cursor-pointer bg-transparent"
+              />
+              <input
+                type="text"
+                value={edgeStroke}
+                onChange={e => setEdgeStroke(e.target.value)}
+                placeholder="#94a3b8"
+                className="flex-1 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400"
+              />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <label className="text-[9px] text-zinc-500 dark:text-zinc-400 w-8">W</label>
+              {['1px', '2px', '3px', '4px'].map(w => (
+                <button
+                  key={w}
+                  onClick={() => setEdgeWidth(w)}
+                  className={`flex-1 text-[8px] py-1 rounded cursor-pointer transition-colors ${
+                    edgeWidth === w
+                      ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium'
+                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                  }`}
+                >
+                  {w}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <label className="text-[9px] text-zinc-500 dark:text-zinc-400 w-8">---</label>
+              {[
+                { label: '—', value: '' },
+                { label: '- -', value: '8 4' },
+                { label: '· ·', value: '3 3' },
+                { label: '-·-', value: '8 4 2 4' },
+              ].map(({ label, value }) => (
+                <button
+                  key={label}
+                  onClick={() => setEdgeDash(value)}
+                  className={`flex-1 text-[8px] py-1 rounded cursor-pointer transition-colors ${
+                    edgeDash === value
+                      ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium'
+                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleAddEdgeStyle}
+              className="w-full px-2 py-1.5 text-[10px] rounded bg-indigo-500 text-white hover:bg-indigo-600 cursor-pointer"
+            >
+              + {t('common.line')} {t('common.style')}
+            </button>
+          </div>
+        )}
+        {!caps.edgeStyle && Object.keys(linkStyles).length === 0 && (
+          <p className="text-[10px] text-zinc-400 dark:text-zinc-500">{t('styleEditor.edgeNotSupported')}</p>
+        )}
+      </div>
 
       {/* Quick help */}
       <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">

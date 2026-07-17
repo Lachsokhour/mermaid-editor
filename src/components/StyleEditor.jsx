@@ -130,18 +130,18 @@ export default function StyleEditor() {
 
   const tabs = isEdge
     ? (caps.edgeStyle
-        ? [{ id: 'line', icon: ArrowRight, label: 'Line' }, { id: 'presets', icon: Copy, label: 'Presets' }]
+        ? [{ id: 'line', icon: ArrowRight, label: t('styleEditor.tab.line') }, { id: 'presets', icon: Copy, label: t('styleEditor.tab.presets') }]
         : [])
     : isCluster
       ? (caps.nodeStyle
-          ? [{ id: 'colors', icon: Paintbrush, label: 'Colors' }, { id: 'presets', icon: Copy, label: 'Presets' }]
+          ? [{ id: 'colors', icon: Paintbrush, label: t('styleEditor.tab.colors') }, { id: 'presets', icon: Copy, label: t('styleEditor.tab.presets') }]
           : [])
       : (caps.nodeStyle
           ? [
-              { id: 'colors', icon: Paintbrush, label: 'Colors' },
-              { id: 'text', icon: Type, label: 'Text' },
-              { id: 'shape', icon: Square, label: 'Shape' },
-              { id: 'presets', icon: Copy, label: 'Presets' },
+              { id: 'colors', icon: Paintbrush, label: t('styleEditor.tab.colors') },
+              { id: 'text', icon: Type, label: t('styleEditor.tab.text') },
+              { id: 'shape', icon: Square, label: t('styleEditor.tab.shape') },
+              { id: 'presets', icon: Copy, label: t('styleEditor.tab.presets') },
             ]
           : [])
 
@@ -159,14 +159,14 @@ export default function StyleEditor() {
               : (selectedElement.label || selectedElement.id)}
           </span>
           <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 uppercase">
-            {isEdge ? 'edge' : isCluster ? 'cluster' : selectedElement.type}
+            {isEdge ? t('styleEditor.edge') : isCluster ? t('styleEditor.cluster') : selectedElement.type}
           </span>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={handleCopyStyle} className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 cursor-pointer" title="Copy style">
+          <button onClick={handleCopyStyle} className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 cursor-pointer" title={t('styleEditor.copyStyle')}>
             <Copy size={11} />
           </button>
-          <button onClick={handleRemoveStyle} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 cursor-pointer" title="Remove style">
+          <button onClick={handleRemoveStyle} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 cursor-pointer" title={t('styleEditor.removeStyle')}>
             <Trash2 size={11} />
           </button>
           <button onClick={clearSelection} className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 cursor-pointer">
@@ -204,10 +204,10 @@ export default function StyleEditor() {
         {!canStyleThis && (
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <div className="text-[11px] text-zinc-400 dark:text-zinc-500 leading-relaxed">
-              {isEdge ? 'Edge styling not supported for this diagram type' : 'Node styling not supported for this diagram type'}
+              {isEdge ? t('styleEditor.edgeNotSupported') : t('styleEditor.nodeNotSupported')}
             </div>
             <div className="text-[9px] text-zinc-300 dark:text-zinc-600 mt-1">
-              Use Theme CSS for global styling
+              {t('styleEditor.useThemeCSS')}
             </div>
           </div>
         )}
@@ -224,17 +224,17 @@ export default function StyleEditor() {
 
             {/* Quick color presets */}
             <div>
-              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block mb-1">Quick colors</label>
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block mb-1">{t('styleEditor.quickColors')}</label>
               <div className="flex gap-1 flex-wrap">
                 {[
-                  { color: '#3b82f6', name: 'Blue' },
-                  { color: '#10b981', name: 'Green' },
-                  { color: '#ef4444', name: 'Red' },
-                  { color: '#f59e0b', name: 'Amber' },
-                  { color: '#8b5cf6', name: 'Violet' },
-                  { color: '#6b7280', name: 'Gray' },
-                  { color: '#ec4899', name: 'Pink' },
-                  { color: '#14b8a6', name: 'Teal' },
+                  { color: '#3b82f6', name: t('colorNames.blue') },
+                  { color: '#10b981', name: t('colorNames.green') },
+                  { color: '#ef4444', name: t('colorNames.red') },
+                  { color: '#f59e0b', name: t('colorNames.amber') },
+                  { color: '#8b5cf6', name: t('colorNames.violet') },
+                  { color: '#6b7280', name: t('colorNames.gray') },
+                  { color: '#ec4899', name: t('colorNames.pink') },
+                  { color: '#14b8a6', name: t('colorNames.teal') },
                 ].map(({ color, name }) => (
                   <button
                     key={color}
@@ -253,7 +253,7 @@ export default function StyleEditor() {
 
             {/* Stroke color */}
             <div className="flex items-center justify-between gap-2">
-              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">Line</label>
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">{t('styleEditor.line')}</label>
               <div className="flex items-center gap-1.5 flex-1">
                 <input
                   type="color"
@@ -273,7 +273,7 @@ export default function StyleEditor() {
 
             {/* Label text color */}
             <div className="flex items-center justify-between gap-2">
-              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">Label</label>
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">{t('styleEditor.label')}</label>
               <div className="flex items-center gap-1.5 flex-1">
                 <input
                   type="color"
@@ -293,7 +293,7 @@ export default function StyleEditor() {
 
             {/* Label background fill */}
             <div className="flex items-center justify-between gap-2">
-              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">Fill</label>
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">{t('styleEditor.fill')}</label>
               <div className="flex items-center gap-1.5 flex-1">
                 <input
                   type="color"
@@ -313,7 +313,7 @@ export default function StyleEditor() {
 
             {/* Stroke width */}
             <div className="flex items-center justify-between gap-2">
-              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">Width</label>
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">{t('styleEditor.width')}</label>
               <div className="flex items-center gap-1 flex-1">
                 {['1px', '2px', '3px', '4px'].map(w => (
                   <button
@@ -333,15 +333,15 @@ export default function StyleEditor() {
 
             {/* Stroke dash */}
             <div>
-              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block mb-1">Pattern</label>
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block mb-1">{t('styleEditor.pattern')}</label>
               <div className="grid grid-cols-3 gap-1 mb-1.5">
                 {[
-                  { label: 'Solid', value: '' },
-                  { label: 'Dashed', value: '8 4' },
-                  { label: 'Short', value: '5 5' },
-                  { label: 'Dotted', value: '3 3' },
-                  { label: 'Tiny', value: '2 2' },
-                  { label: 'DashDot', value: '8 4 2 4' },
+                  { label: t('styleEditor.patternSolid'), value: '' },
+                  { label: t('styleEditor.patternDashed'), value: '8 4' },
+                  { label: t('styleEditor.patternShort'), value: '5 5' },
+                  { label: t('styleEditor.patternDotted'), value: '3 3' },
+                  { label: t('styleEditor.patternTiny'), value: '2 2' },
+                  { label: t('styleEditor.patternDashDot'), value: '8 4 2 4' },
                 ].map(({ label, value }) => (
                   <button
                     key={label}
@@ -376,7 +376,7 @@ export default function StyleEditor() {
             {/* Opacity */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Opacity</label>
+                <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{t('styleEditor.opacity')}</label>
                 <span className="text-[10px] text-zinc-400 font-mono">{localStyle.opacity || '1'}</span>
               </div>
               <input
@@ -555,7 +555,7 @@ export default function StyleEditor() {
                   }`}
                 >
                   <ShapeIcon shape={selectedShape} color={presetFilter === selectedShape ? '#6366f1' : '#94a3b8'} size={10} />
-                  This shape
+                  {t('common.thisShape')}
                 </button>
               )}
             </div>

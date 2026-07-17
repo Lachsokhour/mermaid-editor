@@ -204,6 +204,14 @@ function getExportFilename(ext) {
   return `${name}-${ts}.${ext}`
 }
 
+export function downloadRaw() {
+  const code = useEditorStore.getState().currentCode
+  if (!code) { showToast('No diagram to download', 'warning'); return }
+  const blob = new Blob([code], { type: 'text/plain' })
+  downloadBlob(blob, getExportFilename('mmd'))
+  showToast('Raw diagram downloaded', 'success')
+}
+
 export async function downloadSVG() {
   const svgEl = getSvgEl()
   if (!svgEl) { showToast('No diagram to download', 'warning'); return }

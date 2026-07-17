@@ -20,7 +20,7 @@ export default function ThemeCSSEditor() {
       <button
         onClick={() => setOpen(!open)}
         className="p-2 rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 shadow-md hover:shadow-lg text-zinc-500 dark:text-zinc-400 hover:text-amber-500 dark:hover:text-amber-400 cursor-pointer transition-all"
-        title="Theme CSS Editor"
+        title={t('themeCSS.title')}
       >
         <Code2 size={16} />
       </button>
@@ -33,7 +33,7 @@ export default function ThemeCSSEditor() {
               <div className="flex items-center gap-1.5">
                 <FileCode size={12} className="text-amber-500" />
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                  Theme CSS
+                  {t('themeCSS.header')}
                 </span>
               </div>
               <button onClick={() => setOpen(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer">
@@ -43,7 +43,7 @@ export default function ThemeCSSEditor() {
 
             {/* Preset selector */}
             <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700">
-              <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">Presets</div>
+              <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">{t('themeCSS.presets')}</div>
               <div className="flex flex-wrap gap-1">
                 {THEME_CSS_PRESETS.map(preset => (
                   <button
@@ -74,7 +74,7 @@ export default function ThemeCSSEditor() {
                 spellCheck={false}
               />
               <div className="mt-1.5 text-[9px] text-zinc-400 dark:text-zinc-500">
-                CSS is injected into the SVG's scoped style tag. Use <code className="bg-zinc-100 dark:bg-zinc-800 px-0.5 rounded">!important</code> to override defaults.
+                {t('themeCSS.helpText')}
               </div>
             </div>
 
@@ -84,7 +84,7 @@ export default function ThemeCSSEditor() {
                   onClick={() => { setThemeCSS(''); setActivePreset('default') }}
                   className="w-full text-[10px] py-1 rounded border border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
                 >
-                  Clear CSS
+                  {t('themeCSS.clearCSS')}
                 </button>
               </div>
             )}

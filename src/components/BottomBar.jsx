@@ -1,6 +1,6 @@
-import { Copy, Image, Download, Moon, Sun, Grid3x3 } from 'lucide-react'
+import { Copy, Image, Download, Moon, Sun, Grid3x3, FileCode } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
-import { copyToClipboard, downloadSVG, downloadPNG, copyImage, showToast } from '../utils/export'
+import { copyToClipboard, downloadSVG, downloadPNG, downloadRaw, copyImage, showToast } from '../utils/export'
 import { useI18n } from '../i18n/I18nProvider'
 import { version as mermaidVersion } from 'mermaid/package.json'
 
@@ -42,6 +42,12 @@ export default function BottomBar() {
           className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
         >
           <Download size={12} /> {t('common.svg')}
+        </button>
+        <button
+          onClick={downloadRaw}
+          className="flex items-center gap-1 px-2 py-1 text-[11px] rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+        >
+          <FileCode size={12} /> {t('common.raw')}
         </button>
         <button
           onClick={downloadPNG}

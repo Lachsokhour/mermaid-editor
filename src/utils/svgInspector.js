@@ -6,7 +6,7 @@ function extractNodeId(dataId) {
   if (diagramTypes.test(id)) {
     id = id.replace(diagramTypes, '')
   }
-  const internalPrefixes = /^(classId|stateId|nodeId|actorId|actor2|er)-/
+  const internalPrefixes = /^(classId|stateId|state|nodeId|actorId|actor2|er)-/
   if (internalPrefixes.test(id)) {
     id = id.replace(internalPrefixes, '')
   }
@@ -241,4 +241,6 @@ export {
   getElementClasses,
   getAvailableNodeIds,
   CLICK_SELECTORS,
+  EDGE_CLASSES,
+  NODE_CLASSES,
 }

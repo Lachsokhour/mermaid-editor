@@ -20,11 +20,11 @@ export default function StylePanel() {
   }
 
   const swatch = [
-    { label: 'Primary', color: 'primaryColor' },
-    { label: 'Bg', color: 'secondaryColor' },
-    { label: 'Line', color: 'lineColor' },
-    { label: 'Card', color: 'primaryBorderColor' },
-    { label: 'Text', color: 'primaryTextColor' },
+    { label: t('stylePanel.swatchPrimary'), color: 'primaryColor' },
+    { label: t('stylePanel.swatchBg'), color: 'secondaryColor' },
+    { label: t('stylePanel.swatchLine'), color: 'lineColor' },
+    { label: t('stylePanel.swatchCard'), color: 'primaryBorderColor' },
+    { label: t('stylePanel.swatchText'), color: 'primaryTextColor' },
   ]
 
   return (
@@ -53,7 +53,7 @@ export default function StylePanel() {
             {/* Hue slider */}
             <div className="mb-2.5">
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Hue</label>
+                <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{t('stylePanel.hue')}</label>
                 <span className="text-[10px] text-zinc-400 font-mono">{h}°</span>
               </div>
               <div className="relative h-5 rounded-md overflow-hidden"
@@ -96,7 +96,7 @@ export default function StylePanel() {
 
             {/* Swatch preview */}
             <div className="mb-2.5">
-              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block mb-1">Preview</label>
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block mb-1">{t('stylePanel.preview')}</label>
               <div className="flex gap-1">
                 {swatch.map(({ label, color }) => {
                   const hue = paletteParams.h
@@ -125,7 +125,7 @@ export default function StylePanel() {
             <div className="space-y-2">
               <div>
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Saturation</label>
+                  <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{t('stylePanel.saturation')}</label>
                   <span className="text-[10px] text-zinc-400 font-mono">{satScale}%</span>
                 </div>
                 <input
@@ -136,7 +136,7 @@ export default function StylePanel() {
               </div>
               <div>
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Brightness</label>
+                  <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{t('stylePanel.brightness')}</label>
                   <span className="text-[10px] text-zinc-400 font-mono">{briScale}%</span>
                 </div>
                 <input
@@ -147,7 +147,7 @@ export default function StylePanel() {
               </div>
               <div>
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Warmth</label>
+                  <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{t('stylePanel.warmth')}</label>
                   <span className="text-[10px] text-zinc-400 font-mono">{warmShift > 0 ? `+${warmShift}` : warmShift}</span>
                 </div>
                 <input
@@ -164,7 +164,7 @@ export default function StylePanel() {
               className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600 cursor-pointer transition-colors"
             >
               <Shuffle size={11} />
-              Shuffle
+              {t('stylePanel.shuffle')}
             </button>
           </div>
         </>

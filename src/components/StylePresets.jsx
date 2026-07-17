@@ -22,7 +22,7 @@ export default function StylePresets() {
       <button
         onClick={() => setOpen(!open)}
         className="p-2 rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 shadow-md hover:shadow-lg text-zinc-500 dark:text-zinc-400 hover:text-purple-500 dark:hover:text-purple-400 cursor-pointer transition-all"
-        title="Style Presets"
+        title={t('stylePresets.title')}
       >
         <Sparkles size={16} />
       </button>
@@ -33,7 +33,7 @@ export default function StylePresets() {
           <div className="absolute right-0 bottom-full mb-2 z-50 w-52 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl p-3">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                Style Presets
+                {t('stylePresets.header')}
               </span>
               <button onClick={() => setOpen(false)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer">
                 <X size={12} />
@@ -42,7 +42,7 @@ export default function StylePresets() {
 
             {!selectedElement && (
               <p className="text-[10px] text-zinc-400 dark:text-zinc-500 text-center py-2">
-                Click an element in the preview to apply styles
+                {t('stylePresets.clickElement')}
               </p>
             )}
 

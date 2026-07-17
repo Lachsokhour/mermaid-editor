@@ -44,7 +44,7 @@ function styleObjectToString(styleObj) {
 
 function parseClassDefs(code) {
   const classDefs = {}
-  const regex = /^\s*classDef\s+(\w[\w-]*)\s+(.+?)(?:\n|$)/g
+  const regex = /^\s*classDef\s+(\w[\w-]*)\s+(.+?)(?:\n|$)/gm
   let match
   while ((match = regex.exec(code)) !== null) {
     const name = match[1]
