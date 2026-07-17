@@ -104,44 +104,137 @@ async function ensureFontsLoaded() {
   } catch {}
 }
 
-function stripForeignObjects(svg) {
-  // foreignObject always taints canvas when SVG is loaded as an <img>.
-  // Replace each with an SVG <text> element positioned at the same place.
+function extractFoStyles(fo) {
+  const result = {}
+
+  const divEl = fo.querySelector('div')
+  if (divEl) {
+    const ds = divEl.getAttribute('style') || ''
+    let m
+    if ((m = ds.match(/(?:^|;)\s*color\s*:\s*([^;!]+)/))) result.color = m[1].trim()
+    if ((m = ds.match(/font-weight\s*:\s*(\w+)/))) result.fontWeight = m[1]
+    if ((m = ds.match(/font-size\s*:\s*([\d.]+)px/))) result.fontSize = m[1]
+    if ((m = ds.match(/font-family\s*:\s*([^;]+)/))) result.fontFamily = m[1].trim()
+  }
+
+  const spanEl = fo.querySelector('span')
+  if (spanEl) {
+    const ss = spanEl.getAttribute('style') || ''
+    let m
+    if (!result.color && (m = ss.match(/(?:^|;)\s*color\s*:\s*([^;!]+)/))) result.color = m[1].trim()
+    if (!result.fontWeight && (m = ss.match(/font-weight\s*:\s*(\w+)/))) result.fontWeight = m[1]
+    if (!result.fontSize && (m = ss.match(/font-size\s*:\s*([\d.]+)px/))) result.fontSize = m[1]
+    if (!result.fontFamily && (m = ss.match(/font-family\s*:\s*([^;]+)/))) result.fontFamily = m[1].trim()
+  }
+
+  const pEl = fo.querySelector('p')
+  if (pEl) {
+    const ps = pEl.getAttribute('style') || ''
+    let m
+    if (!result.color && (m = ps.match(/(?:^|;)\s*color\s*:\s*([^;!]+)/))) result.color = m[1].trim()
+    if (!result.fontSize && (m = ps.match(/font-size\s*:\s*([\d.]+)px/))) result.fontSize = m[1]
+  }
+
+  return result
+}
+
+function getFoTextLines(fo) {
+  const pEl = fo.querySelector('p')
+  const target = pEl || fo.querySelector('span') || fo
+  const html = target.innerHTML || target.textContent || ''
+  return html.split(/<br(?:\s[^>]*)?\/?>/i).map(s => {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = s
+    return (tmp.textContent || '').trim()
+  }).filter(Boolean)
+}
+
+function findShapeCenter(fo) {
+  const parentG = fo.parentElement
+  if (!parentG) return null
+  const shape = parentG.querySelector('rect, polygon, ellipse, circle')
+  if (!shape) return null
+  const tag = shape.tagName.toLowerCase()
+  if (tag === 'rect') {
+    const x = parseFloat(shape.getAttribute('x')) || 0
+    const y = parseFloat(shape.getAttribute('y')) || 0
+    const w = parseFloat(shape.getAttribute('width')) || 0
+    const h = parseFloat(shape.getAttribute('height')) || 0
+    return { cx: x + w / 2, cy: y + h / 2 }
+  }
+  if (tag === 'circle') {
+    return {
+      cx: parseFloat(shape.getAttribute('cx')) || 0,
+      cy: parseFloat(shape.getAttribute('cy')) || 0,
+    }
+  }
+  if (tag === 'ellipse') {
+    return {
+      cx: parseFloat(shape.getAttribute('cx')) || 0,
+      cy: parseFloat(shape.getAttribute('cy')) || 0,
+    }
+  }
+  return null
+}
+
+export function stripForeignObjects(svg) {
   const doc = new DOMParser().parseFromString(svg, 'image/svg+xml')
   const root = doc.documentElement
-  const fos = root.querySelectorAll('foreignObject')
-  for (let i = fos.length - 1; i >= 0; i--) {
-    const fo = fos[i]
-    const x = parseFloat(fo.getAttribute('x')) || 0
-    const y = parseFloat(fo.getAttribute('y')) || 0
-    const w = parseFloat(fo.getAttribute('width')) || 0
-    const h = parseFloat(fo.getAttribute('height')) || 0
+  const foList = root.querySelectorAll('foreignObject')
+
+  for (let i = foList.length - 1; i >= 0; i--) {
+    const fo = foList[i]
     const text = (fo.textContent || '').trim()
     if (!text) { fo.remove(); continue }
 
-    // Walk children to inspect style on the deepest inline element
-    let fontSize = null, fontFamily = null
-    let node = fo.firstElementChild
-    while (node && node.firstElementChild) { node = node.firstElementChild }
-    if (node) {
-      const st = node.getAttribute('style') || ''
-      const fs = st.match(/font-size\s*:\s*([\d.]+)px/)
-      if (fs) fontSize = fs[1]
-      const ff = st.match(/font-family\s*:\s*([^;]+)/)
-      if (ff) fontFamily = ff[1].trim()
+    const lines = getFoTextLines(fo)
+    if (lines.length === 0) { fo.remove(); continue }
+
+    const styles = extractFoStyles(fo)
+    const center = findShapeCenter(fo)
+
+    let cx = 0, cy = 0
+    if (center) {
+      cx = center.cx
+      cy = center.cy
+    } else {
+      const foX = parseFloat(fo.getAttribute('x')) || 0
+      const foY = parseFloat(fo.getAttribute('y')) || 0
+      const foW = parseFloat(fo.getAttribute('width')) || 0
+      const foH = parseFloat(fo.getAttribute('height')) || 0
+      cx = foX + foW / 2
+      cy = foY + foH / 2
     }
 
     const t = doc.createElementNS('http://www.w3.org/2000/svg', 'text')
-    t.setAttribute('x', x + w / 2)
-    t.setAttribute('y', y + h / 2)
+    t.setAttribute('x', cx)
     t.setAttribute('text-anchor', 'middle')
     t.setAttribute('dominant-baseline', 'central')
-    if (fontSize) t.setAttribute('font-size', fontSize + 'px')
-    if (fontFamily) t.setAttribute('font-family', fontFamily)
+    if (styles.fontSize) t.setAttribute('font-size', styles.fontSize + 'px')
+    if (styles.fontFamily) t.setAttribute('font-family', styles.fontFamily)
+    if (styles.color) t.setAttribute('fill', styles.color)
+    if (styles.fontWeight) t.setAttribute('font-weight', styles.fontWeight)
 
-    t.textContent = text
+    if (lines.length === 1) {
+      t.setAttribute('y', cy)
+      t.textContent = lines[0]
+    } else {
+      const fontSize = styles.fontSize ? parseFloat(styles.fontSize) : 14
+      const lineH = fontSize * 1.3
+      const totalH = (lines.length - 1) * lineH
+      const startY = cy - totalH / 2
+      lines.forEach((line, idx) => {
+        const ts = doc.createElementNS('http://www.w3.org/2000/svg', 'tspan')
+        ts.setAttribute('x', cx)
+        ts.setAttribute('y', startY + idx * lineH)
+        ts.textContent = line
+        t.appendChild(ts)
+      })
+    }
+
     fo.parentNode.replaceChild(t, fo)
   }
+
   return new XMLSerializer().serializeToString(root)
 }
 
@@ -166,7 +259,12 @@ async function svgToCanvas(svgEl, scale = 2) {
   const svgData = getCanvasSvgData()
   if (!svgData) throw new Error('No SVG data available')
 
-  const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+  let sanitized = svgData
+  if (!sanitized.includes('xmlns=')) {
+    sanitized = sanitized.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
+  }
+
+  const blob = new Blob([sanitized], { type: 'image/svg+xml;charset=utf-8' })
   const url = URL.createObjectURL(blob)
 
   const canvas = document.createElement('canvas')
@@ -186,7 +284,7 @@ async function svgToCanvas(svgEl, scale = 2) {
     }
     img.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(new Error('Failed to render SVG'))
+      reject(new Error('Failed to render SVG to canvas'))
     }
     img.src = url
   })
