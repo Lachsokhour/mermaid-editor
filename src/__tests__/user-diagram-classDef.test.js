@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest'
 import mermaid from 'mermaid'
-import { sanitizeFlowchartParens, moveLinkStylesToEnd, migrateMermaidCode } from '../utils/migrateMermaid'
+import { moveLinkStylesToEnd, migrateMermaidCode } from '../utils/migrateMermaid'
 
 beforeAll(() => {
   mermaid.initialize({

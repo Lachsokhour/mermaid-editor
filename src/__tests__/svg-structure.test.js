@@ -102,4 +102,58 @@ describe('SVG structure analysis', () => {
 
     expect(svg.length).toBeGreaterThan(100)
   })
+
+  it('parentheses in labels - what does mermaid produce?', async () => {
+    // Test round nodes with parens inside
+    const rawRound = `graph TD
+    A("Hello (world)") --> B["text (parens)"]
+    B --> C("mix (parens) here")`
+
+    let rawOk = false, rawSvg = ''
+    try {
+      const r = await mermaid.render('test-round-parens', rawRound)
+      rawSvg = r.svg
+      rawOk = true
+    } catch (e) {
+      console.log('Round node raw parse ERROR:', e.message?.slice(0, 200))
+    }
+
+    const migrated = migrateMermaidCode(rawRound)
+    let migOk = false, migSvg = ''
+    try {
+      const r = await mermaid.render('test-round-mig', migrated)
+      migSvg = r.svg
+      migOk = true
+    } catch (e) {
+      console.log('Round node migrated parse ERROR:', e.message?.slice(0, 200))
+    }
+
+    console.log('\n=== Round node test ===')
+    console.log('Raw:', rawOk, '| Migrated:', migOk)
+    if (rawOk) {
+      const pMatches = rawSvg.match(/<p[^>]*>.*?<\/p>/g)
+      console.log('Raw <p>:', pMatches)
+    }
+    if (migOk) {
+      const pMatches = migSvg.match(/<p[^>]*>.*?<\/p>/g)
+      console.log('Migrated <p>:', pMatches)
+    }
+
+    // Also test the full Khmer diagram with parens
+    const khmerCode = `graph TD
+    A["ចាប់ផ្តើមរៀន"] --> B("ជំហានទី១")
+    B --> C["ឃ្លា (មាន ៧ព្យាង្គ)"]
+    C --> D("ចួន (ឆ្លងវគ្គ)")`
+
+    let khmerOk = false
+    try {
+      await mermaid.render('test-khmer-parens', khmerCode)
+      khmerOk = true
+    } catch (e) {
+      console.log('Khmer raw parse ERROR:', e.message?.slice(0, 200))
+    }
+    console.log('Khmer with parens parses OK:', khmerOk)
+
+    expect(rawOk).toBe(true)
+  })
 })
