@@ -243,47 +243,80 @@ function sanitizeSvgXml(xml) {
 }
 
 async function svgToCanvas(svgEl, scale = 3) {
-  const { width, height } = parseViewBox(svgEl)
+  const vb = svgEl.getAttribute('viewBox')
+  const parts = vb ? vb.split(/\s+/).map(Number) : []
+  const width = parts.length === 4 ? parts[2] : 800
+  const height = parts.length === 4 ? parts[3] : 600
+  if (!width || !height || !isFinite(width) || !isFinite(height)) {
+    throw new Error(`Invalid viewBox: ${vb}`)
+  }
   const padding = 20
-  const cw = (width + padding * 2) * scale
-  const ch = (height + padding * 2) * scale
+  const cw = Math.round((width + padding * 2) * scale)
+  const ch = Math.round((height + padding * 2) * scale)
+  if (cw > 10000 || ch > 10000) {
+    throw new Error(`Canvas too large: ${cw}x${ch}`)
+  }
 
   const svgData = getCanvasSvgData()
   if (!svgData) throw new Error('No SVG data available')
 
-  let sanitized = svgData
-  if (!sanitized.includes('xmlns=')) {
-    sanitized = sanitized.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
+  let xml = svgData
+  if (!xml.includes('xmlns=')) {
+    xml = xml.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
   }
-
-  sanitized = sanitizeSvgXml(sanitized)
-
-  const blob = new Blob([sanitized], { type: 'image/svg+xml;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
+  xml = sanitizeSvgXml(xml)
 
   const canvas = document.createElement('canvas')
   canvas.width = cw
   canvas.height = ch
   const ctx = canvas.getContext('2d')
-
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, cw, ch)
 
-  await new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => {
-      ctx.drawImage(img, padding * scale, padding * scale, width * scale, height * scale)
+  async function loadBlobImage(blob) {
+    const url = URL.createObjectURL(blob)
+    try {
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image()
+        i.onload = () => { URL.revokeObjectURL(url); resolve(i) }
+        i.onerror = () => { URL.revokeObjectURL(url); reject(new Error('img load failed')) }
+        i.src = url
+      })
+      return img
+    } catch (e) {
       URL.revokeObjectURL(url)
-      resolve()
+      throw e
     }
-    img.onerror = () => {
-      URL.revokeObjectURL(url)
-      reject(new Error('Failed to render SVG to canvas'))
-    }
-    img.src = url
-  })
+  }
 
-  return canvas
+  async function loadDataImage(xml) {
+    const uri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml)
+    return new Promise((resolve, reject) => {
+      const i = new Image()
+      i.onload = () => resolve(i)
+      i.onerror = () => reject(new Error('data URI img load failed'))
+      i.src = uri
+    })
+  }
+
+  try {
+    const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' })
+    const img = await loadBlobImage(blob)
+    ctx.drawImage(img, padding * scale, padding * scale, width * scale, height * scale)
+    return canvas
+  } catch (e) {
+    console.warn('blob: URI failed, retrying with data: URI —', e.message)
+  }
+
+  try {
+    const img = await loadDataImage(xml)
+    ctx.drawImage(img, padding * scale, padding * scale, width * scale, height * scale)
+    return canvas
+  } catch (e) {
+    console.warn('data: URI also failed —', e.message)
+  }
+
+  throw new Error('Failed to render SVG to canvas (tried blob: and data: URI)')
 }
 
 function pad(n) { return String(n).padStart(2, '0') }
