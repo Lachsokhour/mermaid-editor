@@ -60,6 +60,35 @@ const TYPE_DETECTORS = [
 export default DIAGRAMS
 export { TYPE_DETECTORS }
 
+export const DIAGRAM_CAPABILITIES = {
+  flowchart:              { nodeStyle: true, edgeStyle: true, classDef: true, clusters: true },
+  class:                  { nodeStyle: true, edgeStyle: false, classDef: true, clusters: false },
+  state:                  { nodeStyle: true, edgeStyle: false, classDef: true, clusters: true },
+  'entity-relationship':  { nodeStyle: true, edgeStyle: false, classDef: true, clusters: false },
+  sequence:               { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  mindmap:                { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  gantt:                  { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  kanban:                 { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  timeline:               { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  'user-journey':         { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  requirement:            { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  architecture:           { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  block:                  { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  c4:                     { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  git:                    { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  ishikawa:               { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  packet:                 { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  pie:                    { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  quadrant:               { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  radar:                  { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  sankey:                 { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  treeview:               { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  treemap:                { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  venn:                   { nodeStyle: true, edgeStyle: true, classDef: true, clusters: false },
+  info:                   { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+  eventmodeling:          { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
+}
+
 export const DEFAULT_THEME_COLORS = {
   primaryColor: '#6366f1',
   secondaryColor: '#eef2ff',

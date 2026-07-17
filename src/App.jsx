@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Sidebar from './components/Sidebar'
 import Editor from './components/Editor'
 import Preview from './components/Preview'
@@ -107,9 +107,6 @@ function AppContent() {
         onHistory={() => setHistoryOpen(true)}
       />
 
-      {/* Auto-save interval */}
-      <SaveOnInterval />
-
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
         <div id="editorPanel" className="flex flex-col border-r border-zinc-200 dark:border-zinc-700 min-w-0" style={editorStyle}>
@@ -130,28 +127,4 @@ function AppContent() {
       <HistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} />
     </div>
   )
-}
-
-function SaveOnInterval() {
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const state = useEditorStore.getState()
-      const LS_KEY = 'mermaid-editor-state'
-      try {
-        localStorage.setItem(LS_KEY, JSON.stringify({
-          code: state.currentCode,
-          config: state.configText,
-          theme: state.currentTheme,
-          grid: state.gridVisible,
-          history: state.history.slice(-30),
-          activeDiagramId: state.activeDiagram?.id,
-          editorWidth: state.editorPanelWidth,
-          themeColors: state.themeColors,
-        }))
-      } catch {}
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [])
-
-  return null
 }

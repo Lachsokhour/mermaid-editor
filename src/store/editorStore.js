@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import DIAGRAMS, { TYPE_DETECTORS, DEFAULT_THEME_COLORS, DEFAULT_COLORS_BY_TYPE, DEFAULT_CONFIG } from '../data/diagrams'
+import DIAGRAMS, { TYPE_DETECTORS, DEFAULT_THEME_COLORS, DEFAULT_COLORS_BY_TYPE, DEFAULT_CONFIG, DIAGRAM_CAPABILITIES } from '../data/diagrams'
 import { generatePalette, getDefaultPaletteParams, hexToHsl } from '../utils/palette'
+import { applyStyleToCode, removeStyleFromCode, applyClassDefToCode, removeClassDef, applyClassAssignmentToCode, removeClassAssignment, applyLinkStyle, removeLinkStyle } from '../utils/styleParser'
 
 const LS_KEY = 'mermaid-editor-state'
 
@@ -24,6 +25,7 @@ function saveToStorage(state) {
       editorWidth: state.editorPanelWidth,
       diagramThemeColors: state.diagramThemeColors,
       diagramPaletteParams: state.diagramPaletteParams,
+      themeCSS: state.themeCSS,
     }))
   } catch {}
 }
@@ -34,7 +36,6 @@ function getDefaultColorsFor(id) {
   return { ...(DEFAULT_COLORS_BY_TYPE[id] || DEFAULT_THEME_COLORS) }
 }
 
-// Migrate old single themeColors → per-diagram map, fill any gaps
 let initialDiagramColors
 if (stored?.diagramThemeColors) {
   initialDiagramColors = { ...stored.diagramThemeColors }
@@ -77,7 +78,6 @@ const initialPaletteParams = (() => {
 })()
 
 export const useEditorStore = create((set, get) => ({
-  // State
   activeDiagram: stored?.activeDiagramId
     ? DIAGRAMS.find(d => d.id === stored.activeDiagramId) || DIAGRAMS[0]
     : DIAGRAMS[0],
@@ -98,8 +98,11 @@ export const useEditorStore = create((set, get) => ({
   toasts: [],
   sidebarOpen: true,
   paletteOpen: false,
+  selectedElement: null,
+  styleEditorOpen: false,
+  themeCSS: stored?.themeCSS ?? '',
 
-  // Actions
+  // --- Navigation ---
   setActiveDiagram: (diagram) => set(s => {
     const colors = s.diagramThemeColors[diagram.id] || getDefaultColorsFor(diagram.id)
     const params = getPaletteFor(s, diagram.id)
@@ -143,6 +146,7 @@ export const useEditorStore = create((set, get) => ({
     saveToStorage(get())
   },
 
+  // --- Theme colors ---
   setThemeColors: (colors) => {
     const state = get()
     const id = state.activeDiagram?.id
@@ -248,5 +252,88 @@ export const useEditorStore = create((set, get) => ({
   clearHistory: () => {
     set({ history: [], historyIndex: -1 })
     saveToStorage(get())
+  },
+
+  // --- Element selection ---
+  selectElement: (element) => {
+    set({ selectedElement: element, styleEditorOpen: element !== null })
+  },
+
+  clearSelection: () => {
+    set({ selectedElement: null })
+  },
+
+  toggleStyleEditor: () => set(s => ({ styleEditorOpen: !s.styleEditorOpen })),
+  setStyleEditorOpen: (open) => set({ styleEditorOpen: open }),
+
+  getCapabilities: () => {
+    const state = get()
+    const id = state.activeDiagram?.id
+    return DIAGRAM_CAPABILITIES[id] || { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false }
+  },
+
+  setThemeCSS: (css) => {
+    set({ themeCSS: css })
+    saveToStorage(get())
+  },
+
+  // --- Internal: code mutation with history ---
+  _mutateCode: (mutator) => {
+    const state = get()
+    const prevCode = state.currentCode
+    const newCode = mutator(prevCode)
+    if (newCode === prevCode) return
+    const history = [...state.history, { code: prevCode, ts: Date.now() }]
+    set({ currentCode: newCode, history })
+    saveToStorage(get())
+  },
+
+  // --- Element style actions (with history) ---
+  updateElementStyle: (nodeId, styleObj) => {
+    get()._mutateCode(code => applyStyleToCode(code, nodeId, styleObj))
+  },
+
+  removeElementStyle: (nodeId) => {
+    get()._mutateCode(code => removeStyleFromCode(code, nodeId))
+  },
+
+  applyPresetToElement: (nodeId, presetStyles) => {
+    get()._mutateCode(code => applyStyleToCode(code, nodeId, presetStyles))
+  },
+
+  applyPresetToElements: (nodeIds, presetStyles) => {
+    get()._mutateCode(code => {
+      let result = code
+      for (const nodeId of nodeIds) {
+        result = applyStyleToCode(result, nodeId, presetStyles)
+      }
+      return result
+    })
+  },
+
+  // --- ClassDef actions (with history) ---
+  updateClassDef: (className, styleObj) => {
+    get()._mutateCode(code => applyClassDefToCode(code, className, styleObj))
+  },
+
+  removeClassDef: (className) => {
+    get()._mutateCode(code => removeClassDef(code, className))
+  },
+
+  assignClassToNodes: (nodeIds, className) => {
+    get()._mutateCode(code => applyClassAssignmentToCode(code, nodeIds, className))
+  },
+
+  removeClassAssignment: (nodeId) => {
+    get()._mutateCode(code => removeClassAssignment(code, nodeId))
+  },
+
+  // --- Edge/Link style actions (with history) ---
+  updateLinkStyle: (edgeIndex, styleObj) => {
+    get()._mutateCode(code => applyLinkStyle(code, edgeIndex, styleObj))
+  },
+
+  removeLinkStyle: (edgeIndex) => {
+    get()._mutateCode(code => removeLinkStyle(code, edgeIndex))
   },
 }))

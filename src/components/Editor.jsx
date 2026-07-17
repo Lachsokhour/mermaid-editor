@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Code2, Settings, Book, AlertTriangle, Workflow } from 'lucide-react'
+import { Code2, Settings, Book, AlertTriangle, Workflow, Paintbrush } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
 import { showToast } from '../utils/export'
 import { useI18n } from '../i18n/I18nProvider'
+import { parseClassDefs, parseClassAssignments, parseInlineStyles, parseLinkStyles, styleObjectToString, parseStyleString, DEFAULT_CLASS_STYLE } from '../utils/styleParser'
 
 const TABS = [
   { id: 'code', icon: Code2 },
+  { id: 'style', icon: Paintbrush },
   { id: 'config', icon: Settings },
   { id: 'docs', icon: Book },
 ]
@@ -38,8 +40,6 @@ const DOCS_URLS = {
   venn: 'https://mermaid.js.org/syntax/flowchart.html',
   wardley: 'https://mermaid.js.org/syntax/quadrantChart.html',
 }
-
-
 
 export default function Editor() {
   const { currentCode, setCurrentCode, configText, setConfigText, activeDiagram, detectType } = useEditorStore()
@@ -130,6 +130,11 @@ export default function Editor() {
         />
       )}
 
+      {/* Style Tab */}
+      {activeTab === 'style' && (
+        <StyleTab />
+      )}
+
       {/* Docs Tab */}
       {activeTab === 'docs' && (
         <div className="flex-1 p-6 overflow-y-auto text-sm text-zinc-600 dark:text-zinc-400 space-y-4">
@@ -186,6 +191,169 @@ export default function Editor() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function StyleTab() {
+  const { currentCode, updateClassDef, removeClassDef, removeElementStyle, removeLinkStyle } = useEditorStore()
+  const classDefs = parseClassDefs(currentCode)
+  const classAssignments = parseClassAssignments(currentCode)
+  const inlineStyles = parseInlineStyles(currentCode)
+  const linkStyles = parseLinkStyles(currentCode)
+
+  const [newClassName, setNewClassName] = useState('')
+  const [newClassStyle, setNewClassStyle] = useState(DEFAULT_CLASS_STYLE)
+
+  const handleAddClassDef = () => {
+    if (!newClassName.trim()) return
+    const styles = parseStyleString(newClassStyle)
+    updateClassDef(newClassName.trim(), styles)
+    setNewClassName('')
+    setNewClassStyle(DEFAULT_CLASS_STYLE)
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Class Definitions */}
+      <div>
+        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
+          Class Definitions ({Object.keys(classDefs).length})
+        </h3>
+        {Object.entries(classDefs).length === 0 ? (
+          <p className="text-[10px] text-zinc-400 dark:text-zinc-500">No classDef found. Create one below.</p>
+        ) : (
+          <div className="space-y-1">
+            {Object.entries(classDefs).map(([name, styles]) => (
+              <div key={name} className="flex items-center gap-2 p-2 rounded-md bg-zinc-50 dark:bg-zinc-900 group">
+                <div
+                  className="w-4 h-4 rounded border border-zinc-300 dark:border-zinc-600 shrink-0"
+                  style={{ backgroundColor: styles.fill || 'transparent' }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 font-mono truncate">{name}</div>
+                  <div className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono truncate">
+                    {styleObjectToString(styles)}
+                  </div>
+                </div>
+                <button
+                  onClick={() => removeClassDef(name)}
+                  className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="mt-2 flex gap-1.5">
+          <input
+            type="text"
+            value={newClassName}
+            onChange={e => setNewClassName(e.target.value)}
+            placeholder="class name"
+            className="w-1/3 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400"
+          />
+          <input
+            type="text"
+            value={newClassStyle}
+            onChange={e => setNewClassStyle(e.target.value)}
+            placeholder="fill:#fff,stroke:#333"
+            className="flex-1 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400"
+          />
+          <button
+            onClick={handleAddClassDef}
+            className="px-2 py-1 text-[10px] rounded bg-indigo-500 text-white hover:bg-indigo-600 cursor-pointer"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      {/* Class Assignments */}
+      {Object.keys(classAssignments).length > 0 && (
+        <div>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
+            Class Assignments
+          </h3>
+          <div className="space-y-1">
+            {Object.entries(classAssignments).map(([nodeId, className]) => (
+              <div key={nodeId} className="flex items-center gap-2 p-1.5 rounded-md bg-zinc-50 dark:bg-zinc-900 text-[10px]">
+                <span className="font-mono text-zinc-600 dark:text-zinc-400">{nodeId}</span>
+                <span className="text-zinc-400">→</span>
+                <span className="font-mono text-indigo-600 dark:text-indigo-400">{className}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Inline Styles */}
+      {Object.keys(inlineStyles).length > 0 && (
+        <div>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
+            Inline Styles
+          </h3>
+          <div className="space-y-1">
+            {Object.entries(inlineStyles).map(([nodeId, styles]) => (
+              <div key={nodeId} className="flex items-center gap-2 p-1.5 rounded-md bg-zinc-50 dark:bg-zinc-900 group">
+                <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 flex-1 truncate">{nodeId}</span>
+                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500 truncate flex-1">
+                  {styleObjectToString(styles)}
+                </span>
+                <button
+                  onClick={() => removeElementStyle(nodeId)}
+                  className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Edge Styles */}
+      {Object.keys(linkStyles).length > 0 && (
+        <div>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
+            Edge Styles ({Object.keys(linkStyles).length})
+          </h3>
+          <div className="space-y-1">
+            {Object.entries(linkStyles).map(([index, styles]) => (
+              <div key={index} className="flex items-center gap-2 p-1.5 rounded-md bg-zinc-50 dark:bg-zinc-900 group">
+                <svg width="20" height="8" viewBox="0 0 20 8" className="shrink-0">
+                  <line
+                    x1="0" y1="4" x2="20" y2="4"
+                    stroke={styles.stroke || '#94a3b8'}
+                    strokeWidth={styles['stroke-width'] || '2'}
+                    strokeDasharray={styles['stroke-dasharray'] || 'none'}
+                  />
+                </svg>
+                <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400">edge {index}</span>
+                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500 truncate flex-1">
+                  {styleObjectToString(styles)}
+                </span>
+                <button
+                  onClick={() => removeLinkStyle(parseInt(index))}
+                  className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quick help */}
+      <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
+        <p className="text-[10px] text-zinc-400 dark:text-zinc-500 leading-relaxed">
+          Use <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-[9px]">classDef name fill:#color</kbd> to define reusable styles.
+          Apply with <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-[9px]">class NodeId name</kbd> or <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-[9px]">Node:::name</kbd>.
+          Use <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-[9px]">style Node fill:#color</kbd> for one-off styles.
+        </p>
+      </div>
     </div>
   )
 }

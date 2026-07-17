@@ -4,10 +4,15 @@ import { useEditorStore } from '../store/editorStore'
 import { useI18n } from '../i18n/I18nProvider'
 import ColorPalette from './ColorPalette'
 import StylePanel from './StylePanel'
+import StyleEditor from './StyleEditor'
+import ClassManager from './ClassManager'
+import ThemeCSSEditor from './ThemeCSSEditor'
 import mermaid from 'mermaid'
 import { setRawSvg } from '../utils/export'
+import { addClickHandlers, clearHighlights, highlightElement, CLICK_SELECTORS } from '../utils/svgInspector'
+import { extractEdgeIndex } from '../utils/styleParser'
 
-function initMermaid(currentTheme, themeColors, locale) {
+function initMermaid(currentTheme, themeColors, locale, themeCSS) {
   const isDark = currentTheme === 'dark'
   const font = locale === 'kh'
     ? '"Kantumruy Pro", "Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
@@ -19,6 +24,7 @@ function initMermaid(currentTheme, themeColors, locale) {
     maxTextSize: 50000,
     securityLevel: 'loose',
     fontFamily: font,
+    themeCSS: themeCSS || undefined,
     themeVariables: {
       darkMode: isDark,
       background: isDark ? '#1a1b1e' : '#ffffff',
@@ -36,7 +42,7 @@ function patchSvgColors(svg, _themeColors, _currentTheme) {
 }
 
 export default function Preview() {
-  const { currentCode, currentTheme, gridVisible, zoom, panX, panY, themeColors, setZoom, setPan, resetView } = useEditorStore()
+  const { currentCode, currentTheme, gridVisible, zoom, panX, panY, themeColors, themeCSS, selectedElement, selectElement, clearSelection, setZoom, setPan, resetView } = useEditorStore()
   const { t, locale } = useI18n()
   const containerRef = useRef(null)
   const [rendered, setRendered] = useState('')
@@ -52,7 +58,6 @@ export default function Preview() {
   const initialRenderRef = useRef(true)
   const renderTimerRef = useRef(null)
 
-  // Keep refs in sync with store
   useEffect(() => {
     panRef.current = { x: panX, y: panY }
   }, [panX, panY])
@@ -60,7 +65,6 @@ export default function Preview() {
     zoomRef.current = zoom
   }, [zoom])
 
-  // Debounced render diagram
   useEffect(() => {
     const code = currentCode?.trim()
     if (!code) { setRendered(''); setError(null); return }
@@ -71,7 +75,7 @@ export default function Preview() {
     renderTimerRef.current = setTimeout(() => {
       const id = ++renderIdRef.current
 
-      initMermaid(currentTheme, themeColors, locale)
+      initMermaid(currentTheme, themeColors, locale, themeCSS)
 
       const container = document.getElementById('mermaid-container')
       if (container) container.innerHTML = ''
@@ -90,9 +94,8 @@ export default function Preview() {
     }, 150)
 
     return () => clearTimeout(renderTimerRef.current)
-  }, [currentCode, currentTheme, themeColors])
+  }, [currentCode, currentTheme, themeColors, themeCSS])
 
-  // Insert SVG into container
   useEffect(() => {
     const container = document.getElementById('mermaid-container')
     if (!container) return
@@ -102,19 +105,41 @@ export default function Preview() {
         initialRenderRef.current = false
         resetView()
       }
+      addClickHandlers(container, (element) => {
+        const enriched = { ...element }
+        if (element.type === 'edge') {
+          const edgeMatch = element.dataId?.match(/^L-(\w+)-(\w+)-(\d+)$/)
+          if (edgeMatch) {
+            enriched.fromId = edgeMatch[1]
+            enriched.toId = edgeMatch[2]
+            const idx = extractEdgeIndex(currentCode, edgeMatch[1], edgeMatch[2])
+            enriched.edgeIndex = idx >= 0 ? idx : (element.edgeOrderIndex >= 0 ? element.edgeOrderIndex : -1)
+          } else {
+            const genericMatch = element.dataId?.match(/([\w]+)-([\w]+)-(\d+)$/)
+            if (genericMatch && genericMatch[1] !== 'edge' && genericMatch[1] !== 'L') {
+              enriched.fromId = genericMatch[1]
+              enriched.toId = genericMatch[2]
+              const idx = extractEdgeIndex(currentCode, genericMatch[1], genericMatch[2])
+              enriched.edgeIndex = idx >= 0 ? idx : (element.edgeOrderIndex >= 0 ? element.edgeOrderIndex : -1)
+            } else if (element.edgeOrderIndex >= 0) {
+              enriched.edgeIndex = element.edgeOrderIndex
+            }
+          }
+        }
+        selectElement(enriched)
+        highlightElement(container, element.id)
+      })
     } else {
       container.innerHTML = ''
     }
-  }, [rendered, resetView])
+  }, [rendered, resetView, selectElement, currentCode])
 
-  // Apply transform on zoom change or initial render
   useEffect(() => {
     const container = document.getElementById('mermaid-container')
     if (!container) return
     container.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`
   }, [zoom, panX, panY])
 
-  // Zoom on wheel (non-passive to allow preventDefault)
   useEffect(() => {
     const el = previewRef.current
     if (!el) return
@@ -132,13 +157,17 @@ export default function Preview() {
     return () => el.removeEventListener('wheel', handler)
   }, [setZoom])
 
-  // Pan on drag
   const handleMouseDown = useCallback((e) => {
-    if (e.target.closest('button') || e.target.closest('.color-palette')) return
+    if (e.target.closest('button') || e.target.closest('.color-palette') || e.target.closest('.style-editor')) return
+    if (!e.target.closest(CLICK_SELECTORS)) {
+      clearSelection()
+      const container = document.getElementById('mermaid-container')
+      clearHighlights(container)
+    }
     isDragging.current = true
     lastPos.current = { x: e.clientX, y: e.clientY }
     if (previewRef.current) previewRef.current.style.cursor = 'grabbing'
-  }, [])
+  }, [clearSelection])
 
   const handleMouseMove = useCallback((e) => {
     if (!isDragging.current) return
@@ -177,7 +206,18 @@ export default function Preview() {
     return () => document.removeEventListener('fullscreenchange', handleFSChange)
   }, [])
 
-  // Listen for render event from Editor (Ctrl+Enter)
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') {
+        clearSelection()
+        const container = document.getElementById('mermaid-container')
+        clearHighlights(container)
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [clearSelection])
+
   useEffect(() => {
     const handler = () => {
       const code = currentCode?.trim()
@@ -185,7 +225,7 @@ export default function Preview() {
       const id = ++renderIdRef.current
       setLoading(true)
       setError(null)
-      initMermaid(currentTheme, themeColors, locale)
+      initMermaid(currentTheme, themeColors, locale, themeCSS)
       mermaid.render('mermaid-render-' + id, code).then(({ svg }) => {
         if (id !== renderIdRef.current) return
         setRawSvg(svg)
@@ -194,13 +234,13 @@ export default function Preview() {
         setLoading(false)
       }).catch(err => {
         if (id !== renderIdRef.current) return
-      setError(err.message || t('common.syntaxError'))
+        setError(err.message || t('common.syntaxError'))
         setLoading(false)
       })
     }
     window.addEventListener('render', handler)
     return () => window.removeEventListener('render', handler)
-  }, [currentCode, currentTheme, themeColors])
+  }, [currentCode, currentTheme, themeColors, themeCSS])
 
   return (
     <div id="previewPanel" className="flex flex-col h-full bg-white dark:bg-zinc-900">
@@ -276,9 +316,17 @@ export default function Preview() {
           <span className="text-xs text-zinc-400 dark:text-zinc-500">{t('common.enterCode')}</span>
         )}
 
-        <div className="absolute bottom-3 right-3 z-20">
+        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2">
+          <ThemeCSSEditor />
+          <ClassManager />
           <StylePanel />
         </div>
+
+        {selectedElement && (
+          <div className="absolute top-3 right-3 z-20">
+            <StyleEditor />
+          </div>
+        )}
       </div>
     </div>
   )
