@@ -215,9 +215,45 @@ export default function StyleEditor() {
         {/* Edge line properties */}
         {isEdge && activeTab === 'line' && canStyleThis && (
           <div className="space-y-3">
+            {/* Edge label display */}
+            {selectedElement.label && (
+              <div className="flex items-center gap-2 px-2 py-1.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded">
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium truncate">{selectedElement.label}</span>
+              </div>
+            )}
+
+            {/* Quick color presets */}
+            <div>
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block mb-1">Quick colors</label>
+              <div className="flex gap-1 flex-wrap">
+                {[
+                  { color: '#3b82f6', name: 'Blue' },
+                  { color: '#10b981', name: 'Green' },
+                  { color: '#ef4444', name: 'Red' },
+                  { color: '#f59e0b', name: 'Amber' },
+                  { color: '#8b5cf6', name: 'Violet' },
+                  { color: '#6b7280', name: 'Gray' },
+                  { color: '#ec4899', name: 'Pink' },
+                  { color: '#14b8a6', name: 'Teal' },
+                ].map(({ color, name }) => (
+                  <button
+                    key={color}
+                    onClick={() => handleStyleChange('stroke', color)}
+                    className={`w-6 h-6 rounded-full border-2 cursor-pointer transition-transform hover:scale-110 ${
+                      localStyle.stroke === color
+                        ? 'border-zinc-900 dark:border-white scale-110'
+                        : 'border-zinc-300 dark:border-zinc-600'
+                    }`}
+                    style={{ backgroundColor: color }}
+                    title={name}
+                  />
+                ))}
+              </div>
+            </div>
+
             {/* Stroke color */}
             <div className="flex items-center justify-between gap-2">
-              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">Color</label>
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">Line</label>
               <div className="flex items-center gap-1.5 flex-1">
                 <input
                   type="color"
@@ -230,6 +266,46 @@ export default function StyleEditor() {
                   value={localStyle.stroke || ''}
                   onChange={e => handleStyleChange('stroke', e.target.value)}
                   placeholder="#94a3b8"
+                  className="flex-1 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400"
+                />
+              </div>
+            </div>
+
+            {/* Label text color */}
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">Label</label>
+              <div className="flex items-center gap-1.5 flex-1">
+                <input
+                  type="color"
+                  value={localStyle.color || '#1e293b'}
+                  onChange={e => handleStyleChange('color', e.target.value)}
+                  className="w-7 h-6 p-0.5 border border-zinc-300 dark:border-zinc-600 rounded cursor-pointer bg-transparent"
+                />
+                <input
+                  type="text"
+                  value={localStyle.color || ''}
+                  onChange={e => handleStyleChange('color', e.target.value)}
+                  placeholder="text color"
+                  className="flex-1 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400"
+                />
+              </div>
+            </div>
+
+            {/* Label background fill */}
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium w-16">Fill</label>
+              <div className="flex items-center gap-1.5 flex-1">
+                <input
+                  type="color"
+                  value={localStyle.fill || '#ffffff'}
+                  onChange={e => handleStyleChange('fill', e.target.value)}
+                  className="w-7 h-6 p-0.5 border border-zinc-300 dark:border-zinc-600 rounded cursor-pointer bg-transparent"
+                />
+                <input
+                  type="text"
+                  value={localStyle.fill || ''}
+                  onChange={e => handleStyleChange('fill', e.target.value)}
+                  placeholder="bg color"
                   className="flex-1 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400"
                 />
               </div>
@@ -258,11 +334,13 @@ export default function StyleEditor() {
             {/* Stroke dash */}
             <div>
               <label className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block mb-1">Pattern</label>
-              <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-3 gap-1 mb-1.5">
                 {[
                   { label: 'Solid', value: '' },
                   { label: 'Dashed', value: '8 4' },
+                  { label: 'Short', value: '5 5' },
                   { label: 'Dotted', value: '3 3' },
+                  { label: 'Tiny', value: '2 2' },
                   { label: 'DashDot', value: '8 4 2 4' },
                 ].map(({ label, value }) => (
                   <button
@@ -286,6 +364,13 @@ export default function StyleEditor() {
                   </button>
                 ))}
               </div>
+              <input
+                type="text"
+                value={localStyle['stroke-dasharray'] || ''}
+                onChange={e => handleStyleChange('stroke-dasharray', e.target.value)}
+                placeholder="e.g. 5 5, 10 5 2 5"
+                className="w-full text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400"
+              />
             </div>
 
             {/* Opacity */}
