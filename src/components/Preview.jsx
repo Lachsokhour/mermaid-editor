@@ -11,7 +11,7 @@ import mermaid from 'mermaid'
 import { setRawSvg } from '../utils/export'
 import { addClickHandlers, clearHighlights, highlightElement, CLICK_SELECTORS } from '../utils/svgInspector'
 import { extractEdgeIndex } from '../utils/styleParser'
-import { sanitizeFlowchartParens } from '../utils/migrateMermaid'
+import { migrateMermaidCode } from '../utils/migrateMermaid'
 
 function initMermaid(currentTheme, themeColors, locale, themeCSS) {
   const isDark = currentTheme === 'dark'
@@ -81,7 +81,7 @@ export default function Preview() {
       const container = document.getElementById('mermaid-container')
       if (container) container.innerHTML = ''
 
-      const safeCode = sanitizeFlowchartParens(code)
+      const safeCode = migrateMermaidCode(code)
       mermaid.render('mermaid-render-' + id, safeCode).then(({ svg }) => {
         if (id !== renderIdRef.current) return
         setRawSvg(svg)
@@ -228,7 +228,7 @@ export default function Preview() {
       setLoading(true)
       setError(null)
       initMermaid(currentTheme, themeColors, locale, themeCSS)
-      const safeCode = sanitizeFlowchartParens(code)
+      const safeCode = migrateMermaidCode(code)
       mermaid.render('mermaid-render-' + id, safeCode).then(({ svg }) => {
         if (id !== renderIdRef.current) return
         setRawSvg(svg)

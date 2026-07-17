@@ -42,6 +42,30 @@ function sanitizeFlowchartParens(code) {
   }).join('\n')
 }
 
+function moveLinkStylesToEnd(code) {
+  const lines = code.split('\n')
+  const linkStyleLines = []
+  const otherLines = []
+  for (const line of lines) {
+    if (/^\s*linkStyle\s+/.test(line)) {
+      linkStyleLines.push(line)
+    } else {
+      otherLines.push(line)
+    }
+  }
+  if (linkStyleLines.length === 0) return code
+  while (otherLines.length && otherLines[otherLines.length - 1].trim() === '') {
+    otherLines.pop()
+  }
+  return otherLines.join('\n') + '\n' + linkStyleLines.join('\n')
+}
+
+function migrateMermaidCode(code) {
+  let result = sanitizeFlowchartParens(code)
+  result = moveLinkStylesToEnd(result)
+  return result
+}
+
 function hasUnescapedParens(code) {
   const lines = code.split('\n')
   for (const line of lines) {
@@ -52,4 +76,4 @@ function hasUnescapedParens(code) {
   return false
 }
 
-export { sanitizeFlowchartParens, hasUnescapedParens, escapeLabelParens }
+export { sanitizeFlowchartParens, moveLinkStylesToEnd, migrateMermaidCode, hasUnescapedParens, escapeLabelParens }
