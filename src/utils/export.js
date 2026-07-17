@@ -178,7 +178,12 @@ function findShapeCenter(fo) {
 }
 
 export function stripForeignObjects(svg) {
-  const doc = new DOMParser().parseFromString(svg, 'image/svg+xml')
+  const styleMatch = svg.match(/<style[^>]*>[\s\S]*?<\/style>/i)
+  const svgWithoutStyle = styleMatch
+    ? svg.replace(styleMatch[0], '<style></style>')
+    : svg
+
+  const doc = new DOMParser().parseFromString(svgWithoutStyle, 'image/svg+xml')
   const root = doc.documentElement
   const foList = root.querySelectorAll('foreignObject')
 
@@ -235,7 +240,11 @@ export function stripForeignObjects(svg) {
     fo.parentNode.replaceChild(t, fo)
   }
 
-  return new XMLSerializer().serializeToString(root)
+  let result = new XMLSerializer().serializeToString(root)
+  if (styleMatch) {
+    result = result.replace(/<style\s*\/>/, styleMatch[0])
+  }
+  return result
 }
 
 function getCanvasSvgData() {

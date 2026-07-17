@@ -80,6 +80,22 @@ describe('stripForeignObjects', () => {
     expect(result).toContain('Static')
   })
 
+  it('preserves style block through parse/serialize round-trip', () => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+      <style>#flowchart-node1{font-family:Rubik;font-size:16px;fill:#333}</style>
+      <g transform="translate(100,50)">
+        <rect x="-60" y="-25" width="120" height="50" rx="5" fill="#d4edda"/>
+        <foreignObject x="-60" y="-25" width="120" height="50"><div xmlns="http://www.w3.org/1999/xhtml"><span class="nodeLabel"><p>Hello</p></span></div></foreignObject>
+      </g>
+    </svg>`
+    const result = stripForeignObjects(svg)
+    expect(result).toContain('<style>')
+    expect(result).toContain('font-family:Rubik')
+    expect(result).toContain('#flowchart-node1')
+    expect(result).toContain('Hello')
+    expect(result).not.toContain('<foreignObject')
+  })
+
   it('handles multi-line text from full SVG', () => {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
       <g transform="translate(200,150)">
