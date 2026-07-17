@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import DIAGRAMS, { TYPE_DETECTORS, DEFAULT_THEME_COLORS, DEFAULT_COLORS_BY_TYPE, DEFAULT_CONFIG, DIAGRAM_CAPABILITIES } from '../data/diagrams'
+import DIAGRAMS, { TYPE_DETECTORS, DEFAULT_THEME_COLORS, DEFAULT_COLORS_BY_TYPE, DIAGRAM_CAPABILITIES } from '../data/diagrams'
 import { generatePalette, getDefaultPaletteParams, hexToHsl } from '../utils/palette'
 import { applyStyleToCode, removeStyleFromCode, applyClassDefToCode, removeClassDef, applyClassAssignmentToCode, removeClassAssignment, applyLinkStyle, removeLinkStyle } from '../utils/styleParser'
 
@@ -17,7 +17,6 @@ function saveToStorage(state) {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
       code: state.currentCode,
-      config: state.configText,
       theme: state.currentTheme,
       grid: state.gridVisible,
       history: state.history.slice(-30),
@@ -82,7 +81,6 @@ export const useEditorStore = create((set, get) => ({
     ? DIAGRAMS.find(d => d.id === stored.activeDiagramId) || DIAGRAMS[0]
     : DIAGRAMS[0],
   currentCode: stored?.code ?? DIAGRAMS[0].code,
-  configText: stored?.config ?? DEFAULT_CONFIG,
   currentTheme: stored?.theme ?? 'light',
   gridVisible: stored?.grid ?? true,
   zoom: 1,
@@ -113,11 +111,6 @@ export const useEditorStore = create((set, get) => ({
     const state = get()
     const history = [...state.history, { code: state.currentCode, ts: Date.now() }]
     set({ currentCode: code, history })
-    saveToStorage(get())
-  },
-
-  setConfigText: (text) => {
-    set({ configText: text })
     saveToStorage(get())
   },
 

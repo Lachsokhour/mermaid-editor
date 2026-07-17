@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Code2, Settings, Book, AlertTriangle, Workflow, Paintbrush } from 'lucide-react'
+import { Code2, Book, AlertTriangle, Workflow, Paintbrush } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
 import { showToast } from '../utils/export'
 import { useI18n } from '../i18n/I18nProvider'
@@ -9,7 +9,6 @@ import StylingGuide from './StylingGuide'
 const TABS = [
   { id: 'code', icon: Code2 },
   { id: 'style', icon: Paintbrush },
-  { id: 'config', icon: Settings },
   { id: 'docs', icon: Book },
 ]
 
@@ -42,16 +41,43 @@ const DOCS_URLS = {
   wardley: 'https://mermaid.js.org/syntax/quadrantChart.html',
 }
 
+function getTabFromUrl() {
+  const params = new URLSearchParams(window.location.search)
+  const tab = params.get('tab')
+  return TABS.some(t => t.id === tab) ? tab : 'code'
+}
+
+function setTabInUrl(tab) {
+  const url = new URL(window.location)
+  if (tab === 'code') {
+    url.searchParams.delete('tab')
+  } else {
+    url.searchParams.set('tab', tab)
+  }
+  history.replaceState(null, '', url)
+}
+
 export default function Editor() {
-  const { currentCode, setCurrentCode, configText, setConfigText, activeDiagram, detectType } = useEditorStore()
+  const { currentCode, setCurrentCode, activeDiagram, detectType } = useEditorStore()
   const { t } = useI18n()
-  const [activeTab, setActiveTab] = useState('code')
+  const [activeTab, setActiveTab] = useState(getTabFromUrl)
   const [diagramLabel, setDiagramLabel] = useState('')
   const debounceRef = useRef(null)
 
   useEffect(() => {
+    const onPop = () => setActiveTab(getTabFromUrl())
+    addEventListener('popstate', onPop)
+    return () => removeEventListener('popstate', onPop)
+  }, [])
+
+  useEffect(() => {
     setDiagramLabel(t('diagrams.' + (activeDiagram?.id || '')))
   }, [activeDiagram, t])
+
+  const switchTab = useCallback((tab) => {
+    setActiveTab(tab)
+    setTabInUrl(tab)
+  }, [])
 
   const handleCodeChange = useCallback((e) => {
     const code = e.target.value
@@ -61,10 +87,6 @@ export default function Editor() {
       detectType(code)
     }, 300)
   }, [setCurrentCode, detectType])
-
-  const handleConfigChange = useCallback((e) => {
-    setConfigText(e.target.value)
-  }, [setConfigText])
 
   const handleKeyDown = useCallback((e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -89,7 +111,7 @@ export default function Editor() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => switchTab(tab.id)}
               className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
                 isActive
                   ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
@@ -118,16 +140,6 @@ export default function Editor() {
           className="flex-1 w-full p-4 text-sm leading-relaxed font-mono bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-none outline-none resize-none tab-size-2"
           spellCheck={false}
           placeholder={t('editor.placeholder')}
-        />
-      )}
-
-      {/* Config Tab */}
-      {activeTab === 'config' && (
-        <textarea
-          value={configText}
-          onChange={handleConfigChange}
-          className="flex-1 w-full p-4 text-sm leading-relaxed font-mono bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-none outline-none resize-none"
-          spellCheck={false}
         />
       )}
 
@@ -200,8 +212,89 @@ export default function Editor() {
   )
 }
 
+function toColorInputValue(val) {
+  return /^#[0-9a-fA-F]{6}$/.test(val || '') ? val : '#94a3b8'
+}
+
+function StyleRow({ label, styles, swatches = ['fill', 'stroke'], preview, onUpdate, onRemove, onSelect, active }) {
+  const [styleText, setStyleText] = useState(() => styleObjectToString(styles))
+  const isEditingRef = useRef(false)
+
+  useEffect(() => {
+    if (!isEditingRef.current) {
+      setStyleText(styleObjectToString(styles))
+    }
+  }, [styles])
+
+  const commit = () => {
+    isEditingRef.current = false
+    onUpdate(parseStyleString(styleText))
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur()
+    } else if (e.key === 'Escape') {
+      isEditingRef.current = false
+      setStyleText(styleObjectToString(styles))
+      e.currentTarget.blur()
+    }
+  }
+
+  const handleSwatchChange = (prop) => (e) => {
+    const next = { ...styles, [prop]: e.target.value }
+    setStyleText(styleObjectToString(next))
+    onUpdate(next)
+  }
+
+  return (
+    <div
+      onClick={onSelect ? () => onSelect(styles) : undefined}
+      className={`flex items-center gap-1.5 p-2 rounded-md border bg-zinc-50 dark:bg-zinc-900 group ${
+        active
+          ? 'border-indigo-400 dark:border-indigo-500 ring-1 ring-indigo-400 dark:ring-indigo-500'
+          : 'border-zinc-200 dark:border-zinc-800'
+      } ${onSelect ? 'cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-700' : ''}`}
+    >
+      {preview}
+      {swatches.map(prop => (
+        <div key={prop} className="flex flex-col items-center gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+          <input
+            type="color"
+            value={toColorInputValue(styles[prop])}
+            onChange={handleSwatchChange(prop)}
+            title={prop}
+            className="w-5 h-5 p-0 border border-zinc-300 dark:border-zinc-600 rounded cursor-pointer bg-transparent"
+          />
+          <span className="text-[7px] uppercase leading-none text-zinc-400 dark:text-zinc-500">{prop === 'stroke' ? 'S' : 'F'}</span>
+        </div>
+      ))}
+      <div className="flex-1 min-w-0">
+        <div className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 font-mono truncate">{label}</div>
+        <input
+          type="text"
+          value={styleText}
+          onChange={e => setStyleText(e.target.value)}
+          onFocus={() => { isEditingRef.current = true }}
+          onBlur={commit}
+          onKeyDown={handleKeyDown}
+          onClick={e => e.stopPropagation()}
+          placeholder="fill:#fff,stroke:#333"
+          className="w-full text-[9px] font-mono px-1 -mx-1 py-0.5 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 focus:border-indigo-400 rounded bg-transparent outline-none text-zinc-500 dark:text-zinc-400 focus:text-zinc-700 dark:focus:text-zinc-300"
+        />
+      </div>
+      <button
+        onClick={e => { e.stopPropagation(); onRemove() }}
+        className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
 function StyleTab() {
-  const { currentCode, updateClassDef, removeClassDef, removeElementStyle, removeLinkStyle, updateLinkStyle, getCapabilities } = useEditorStore()
+  const { currentCode, updateClassDef, removeClassDef, updateElementStyle, removeElementStyle, removeLinkStyle, updateLinkStyle, getCapabilities } = useEditorStore()
   const { t } = useI18n()
   const classDefs = parseClassDefs(currentCode)
   const classAssignments = parseClassAssignments(currentCode)
@@ -216,6 +309,7 @@ function StyleTab() {
   const [edgeStroke, setEdgeStroke] = useState('#94a3b8')
   const [edgeWidth, setEdgeWidth] = useState('2px')
   const [edgeDash, setEdgeDash] = useState('')
+  const [editingEdgeIndex, setEditingEdgeIndex] = useState(null)
 
   const handleAddClassDef = () => {
     if (!newClassName.trim()) return
@@ -225,6 +319,22 @@ function StyleTab() {
     setNewClassStyle(DEFAULT_CLASS_STYLE)
   }
 
+  const handleSelectEdgeStyle = (index, styles) => {
+    setEditingEdgeIndex(index)
+    setEdgeIndex(String(index))
+    setEdgeStroke(toColorInputValue(styles.stroke))
+    setEdgeWidth(styles['stroke-width'] || '2px')
+    setEdgeDash(styles['stroke-dasharray'] || '')
+  }
+
+  const handleCancelEdgeEdit = () => {
+    setEditingEdgeIndex(null)
+    setEdgeIndex(String(Object.keys(linkStyles).length))
+    setEdgeStroke('#94a3b8')
+    setEdgeWidth('2px')
+    setEdgeDash('')
+  }
+
   const handleAddEdgeStyle = () => {
     const idx = parseInt(edgeIndex)
     if (isNaN(idx) || idx < 0) return
@@ -232,7 +342,11 @@ function StyleTab() {
     if (edgeWidth && edgeWidth !== '2px') styles['stroke-width'] = edgeWidth
     if (edgeDash) styles['stroke-dasharray'] = edgeDash
     updateLinkStyle(idx, styles)
-    setEdgeIndex(String(idx + 1))
+    if (editingEdgeIndex !== null) {
+      handleCancelEdgeEdit()
+    } else {
+      setEdgeIndex(String(idx + 1))
+    }
   }
 
   return (
@@ -247,24 +361,13 @@ function StyleTab() {
         ) : (
           <div className="space-y-1">
             {Object.entries(classDefs).map(([name, styles]) => (
-              <div key={name} className="flex items-center gap-2 p-2 rounded-md bg-zinc-50 dark:bg-zinc-900 group">
-                <div
-                  className="w-4 h-4 rounded border border-zinc-300 dark:border-zinc-600 shrink-0"
-                  style={{ backgroundColor: styles.fill || 'transparent' }}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 font-mono truncate">{name}</div>
-                  <div className="text-[9px] text-zinc-400 dark:text-zinc-500 font-mono truncate">
-                    {styleObjectToString(styles)}
-                  </div>
-                </div>
-                <button
-                  onClick={() => removeClassDef(name)}
-                  className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  ×
-                </button>
-              </div>
+              <StyleRow
+                key={name}
+                label={name}
+                styles={styles}
+                onUpdate={next => updateClassDef(name, next)}
+                onRemove={() => removeClassDef(name)}
+              />
             ))}
           </div>
         )}
@@ -300,7 +403,7 @@ function StyleTab() {
           </h3>
           <div className="space-y-1">
             {Object.entries(classAssignments).map(([nodeId, className]) => (
-              <div key={nodeId} className="flex items-center gap-2 p-1.5 rounded-md bg-zinc-50 dark:bg-zinc-900 text-[10px]">
+              <div key={nodeId} className="flex items-center gap-2 p-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-[10px]">
                 <span className="font-mono text-zinc-600 dark:text-zinc-400">{nodeId}</span>
                 <span className="text-zinc-400">→</span>
                 <span className="font-mono text-indigo-600 dark:text-indigo-400">{className}</span>
@@ -318,18 +421,13 @@ function StyleTab() {
           </h3>
           <div className="space-y-1">
             {Object.entries(inlineStyles).map(([nodeId, styles]) => (
-              <div key={nodeId} className="flex items-center gap-2 p-1.5 rounded-md bg-zinc-50 dark:bg-zinc-900 group">
-                <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 flex-1 truncate">{nodeId}</span>
-                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500 truncate flex-1">
-                  {styleObjectToString(styles)}
-                </span>
-                <button
-                  onClick={() => removeElementStyle(nodeId)}
-                  className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  ×
-                </button>
-              </div>
+              <StyleRow
+                key={nodeId}
+                label={nodeId}
+                styles={styles}
+                onUpdate={next => updateElementStyle(nodeId, next)}
+                onRemove={() => removeElementStyle(nodeId)}
+              />
             ))}
           </div>
         </div>
@@ -345,33 +443,46 @@ function StyleTab() {
         {Object.keys(linkStyles).length > 0 && (
           <div className="space-y-1 mb-2">
             {Object.entries(linkStyles).map(([index, styles]) => (
-              <div key={index} className="flex items-center gap-2 p-1.5 rounded-md bg-zinc-50 dark:bg-zinc-900 group">
-                <svg width="20" height="8" viewBox="0 0 20 8" className="shrink-0">
-                  <line
-                    x1="0" y1="4" x2="20" y2="4"
-                    stroke={styles.stroke || '#94a3b8'}
-                    strokeWidth={styles['stroke-width'] || '2'}
-                    strokeDasharray={styles['stroke-dasharray'] || 'none'}
-                  />
-                </svg>
-                <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400">edge {index}</span>
-                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500 truncate flex-1">
-                  {styleObjectToString(styles)}
-                </span>
-                <button
-                  onClick={() => removeLinkStyle(parseInt(index))}
-                  className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  ×
-                </button>
-              </div>
+              <StyleRow
+                key={index}
+                label={`edge ${index}`}
+                styles={styles}
+                swatches={['stroke']}
+                active={editingEdgeIndex === parseInt(index)}
+                preview={
+                  <svg width="20" height="8" viewBox="0 0 20 8" className="shrink-0">
+                    <line
+                      x1="0" y1="4" x2="20" y2="4"
+                      stroke={styles.stroke || '#94a3b8'}
+                      strokeWidth={styles['stroke-width'] || '2'}
+                      strokeDasharray={styles['stroke-dasharray'] || 'none'}
+                    />
+                  </svg>
+                }
+                onUpdate={next => updateLinkStyle(parseInt(index), next)}
+                onRemove={() => removeLinkStyle(parseInt(index))}
+                onSelect={rowStyles => handleSelectEdgeStyle(parseInt(index), rowStyles)}
+              />
             ))}
           </div>
         )}
 
-        {/* Add edge style */}
+        {/* Add / edit edge style */}
         {caps.edgeStyle && (
-          <div className="p-2 rounded-md bg-zinc-50 dark:bg-zinc-900 space-y-2">
+          <div className="p-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400">
+                {editingEdgeIndex !== null ? `Editing edge ${editingEdgeIndex}` : 'New edge style'}
+              </span>
+              {editingEdgeIndex !== null && (
+                <button
+                  onClick={handleCancelEdgeEdit}
+                  className="text-[9px] text-indigo-500 hover:text-indigo-600 cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
             <div className="flex items-center gap-1.5">
               <label className="text-[9px] text-zinc-500 dark:text-zinc-400 w-8">#</label>
               <input
@@ -379,7 +490,8 @@ function StyleTab() {
                 min="0"
                 value={edgeIndex}
                 onChange={e => setEdgeIndex(e.target.value)}
-                className="w-12 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400"
+                disabled={editingEdgeIndex !== null}
+                className="w-12 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400 disabled:opacity-60"
               />
               <input
                 type="color"
@@ -396,47 +508,32 @@ function StyleTab() {
               />
             </div>
             <div className="flex items-center gap-1.5">
-              <label className="text-[9px] text-zinc-500 dark:text-zinc-400 w-8">W</label>
-              {['1px', '2px', '3px', '4px'].map(w => (
-                <button
-                  key={w}
-                  onClick={() => setEdgeWidth(w)}
-                  className={`flex-1 text-[8px] py-1 rounded cursor-pointer transition-colors ${
-                    edgeWidth === w
-                      ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                  }`}
-                >
-                  {w}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <label className="text-[9px] text-zinc-500 dark:text-zinc-400 w-8">---</label>
-              {[
-                { label: '—', value: '' },
-                { label: '- -', value: '8 4' },
-                { label: '· ·', value: '3 3' },
-                { label: '-·-', value: '8 4 2 4' },
-              ].map(({ label, value }) => (
-                <button
-                  key={label}
-                  onClick={() => setEdgeDash(value)}
-                  className={`flex-1 text-[8px] py-1 rounded cursor-pointer transition-colors ${
-                    edgeDash === value
-                      ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+              <label className="text-[9px] text-zinc-500 dark:text-zinc-400 w-8">Line</label>
+              <select
+                value={edgeWidth}
+                onChange={e => setEdgeWidth(e.target.value)}
+                className="flex-1 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400 cursor-pointer"
+              >
+                {['1px', '2px', '3px', '4px'].map(w => (
+                  <option key={w} value={w}>{w} width</option>
+                ))}
+              </select>
+              <select
+                value={edgeDash}
+                onChange={e => setEdgeDash(e.target.value)}
+                className="flex-1 text-[10px] font-mono px-1.5 py-1 border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 outline-none focus:border-indigo-400 cursor-pointer"
+              >
+                <option value="">solid</option>
+                <option value="8 4">dashed</option>
+                <option value="3 3">dotted</option>
+                <option value="8 4 2 4">dash-dot</option>
+              </select>
             </div>
             <button
               onClick={handleAddEdgeStyle}
-              className="w-full px-2 py-1.5 text-[10px] rounded bg-indigo-500 text-white hover:bg-indigo-600 cursor-pointer"
+              className="ml-auto flex px-3 py-1 text-[10px] rounded bg-indigo-500 text-white hover:bg-indigo-600 cursor-pointer"
             >
-              + {t('common.line')} {t('common.style')}
+              {editingEdgeIndex !== null ? 'Update Line Style' : `+ ${t('common.line')} ${t('common.style')}`}
             </button>
           </div>
         )}
@@ -446,12 +543,19 @@ function StyleTab() {
       </div>
 
       {/* Quick help */}
-      <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700">
+      <div className="pt-2 border-t border-zinc-200 dark:border-zinc-700 space-y-2">
         <p className="text-[10px] text-zinc-400 dark:text-zinc-500 leading-relaxed">
           Use <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-[9px]">classDef name fill:#color</kbd> to define reusable styles.
           Apply with <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-[9px]">class NodeId name</kbd> or <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-[9px]">Node:::name</kbd>.
           Use <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-[9px]">style Node fill:#color</kbd> for one-off styles.
         </p>
+        <a
+          href="?tab=docs"
+          className="inline-flex items-center gap-1 text-[10px] text-indigo-500 dark:text-indigo-400 hover:underline"
+        >
+          <Book size={11} />
+          {t('common.learnMore')}
+        </a>
       </div>
     </div>
   )

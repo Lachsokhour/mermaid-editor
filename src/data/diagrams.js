@@ -105,11 +105,6 @@ export const PALETTE_PRESETS = {
   teal:    { primaryColor: '#14b8a6', secondaryColor: '#ccfbf1', lineColor: '#334155', primaryBorderColor: '#ffffff', primaryTextColor: '#0f172a' },
 }
 
-export const DEFAULT_CONFIG = `{
-  "theme": "default",
-  "themeVariables": {}
-}`
-
 // Per-diagram default color assignments — each diagram type gets its own distinct palette
 export const DEFAULT_COLORS_BY_TYPE = {
   flowchart:      { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },

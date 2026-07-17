@@ -119,6 +119,51 @@ export const EDGE_STYLE_PRESETS = [
     name: 'Animated',
     styles: { 'stroke-dasharray': '9 5', animation: 'edge-animation 1s linear infinite' },
   },
+  {
+    id: 'thin',
+    name: 'Thin',
+    styles: { 'stroke-width': '1px' },
+  },
+  {
+    id: 'dash-dot',
+    name: 'Dash Dot',
+    styles: { 'stroke-dasharray': '8 4 2 4' },
+  },
+  {
+    id: 'thick-dashed',
+    name: 'Thick Dashed',
+    styles: { 'stroke-dasharray': '8 4', 'stroke-width': '3px' },
+  },
+  {
+    id: 'bold-orange',
+    name: 'Orange',
+    styles: { stroke: '#f97316', 'stroke-width': '2px' },
+  },
+  {
+    id: 'bold-purple',
+    name: 'Purple',
+    styles: { stroke: '#8b5cf6', 'stroke-width': '2px' },
+  },
+  {
+    id: 'dashed-green',
+    name: 'Dashed Green',
+    styles: { stroke: '#10b981', 'stroke-dasharray': '8 4' },
+  },
+  {
+    id: 'dashed-blue',
+    name: 'Dashed Blue',
+    styles: { stroke: '#3b82f6', 'stroke-dasharray': '8 4' },
+  },
+  {
+    id: 'dashed-orange',
+    name: 'Dashed Orange',
+    styles: { stroke: '#f97316', 'stroke-dasharray': '8 4' },
+  },
+  {
+    id: 'dashed-purple',
+    name: 'Dashed Purple',
+    styles: { stroke: '#8b5cf6', 'stroke-dasharray': '8 4' },
+  },
 ]
 
 export const ELEMENT_STYLE_PRESETS = [
@@ -298,6 +343,83 @@ export const ELEMENT_STYLE_PRESETS = [
     category: 'effect',
     styles: { fill: '#f8fafc', stroke: '#64748b', color: '#334155', 'stroke-dasharray': '8 4', 'stroke-width': '2px' },
   },
+  {
+    id: 'state-start',
+    name: 'Start State',
+    shape: 'circle',
+    category: 'state',
+    styles: { fill: '#10b981', stroke: '#059669', color: '#ffffff' },
+  },
+  {
+    id: 'state-end',
+    name: 'End State',
+    shape: 'circle',
+    category: 'state',
+    styles: { fill: '#ef4444', stroke: '#dc2626', color: '#ffffff', 'stroke-width': '3px' },
+  },
+  {
+    id: 'state-choice',
+    name: 'Choice',
+    shape: 'diamond',
+    category: 'state',
+    styles: { fill: '#fef3c7', stroke: '#d97706', color: '#92400e' },
+  },
+  {
+    id: 'note',
+    name: 'Note',
+    shape: 'rect',
+    category: 'shape',
+    styles: { fill: '#fef9c3', stroke: '#eab308', color: '#854d0e', rx: '4', ry: '4' },
+  },
+  {
+    id: 'input-output',
+    name: 'Input/Output',
+    shape: 'parallelogram',
+    category: 'shape',
+    styles: { fill: '#dbeafe', stroke: '#3b82f6', color: '#1e40af' },
+  },
+  {
+    id: 'document',
+    name: 'Document',
+    shape: 'rect',
+    category: 'shape',
+    styles: { fill: '#fff7ed', stroke: '#ea580c', color: '#9a3412' },
+  },
+  {
+    id: 'database',
+    name: 'Database',
+    shape: 'cylinder',
+    category: 'shape',
+    styles: { fill: '#e0e7ff', stroke: '#6366f1', color: '#312e81' },
+  },
+  {
+    id: 'warning',
+    name: 'Warning',
+    shape: 'rect',
+    category: 'state',
+    styles: { fill: '#fef2f2', stroke: '#ef4444', color: '#991b1b', 'stroke-width': '2px', 'stroke-dasharray': '4 2' },
+  },
+  {
+    id: 'terminal',
+    name: 'Terminal',
+    shape: 'rect',
+    category: 'shape',
+    styles: { fill: '#1e293b', stroke: '#475569', color: '#22c55e', 'font-family': 'monospace', rx: '6', ry: '6' },
+  },
+  {
+    id: 'cloud',
+    name: 'Cloud',
+    shape: 'circle',
+    category: 'shape',
+    styles: { fill: '#e0f2fe', stroke: '#0284c7', color: '#0c4a6e', 'stroke-dasharray': '4 2' },
+  },
+  {
+    id: 'highlight',
+    name: 'Highlight',
+    shape: 'rect',
+    category: 'effect',
+    styles: { fill: '#fef9c3', stroke: '#eab308', color: '#854d0e', 'stroke-width': '3px' },
+  },
 ]
 
 export const THEME_CSS_PRESETS = [
@@ -420,6 +542,109 @@ export const THEME_CSS_PRESETS = [
 .edgeLabel {
   border-radius: 8px;
   padding: 2px 6px;
+}`,
+  },
+  {
+    id: 'dark-mode',
+    name: 'Dark Mode',
+    css: `.node rect, .node polygon, .node circle, .node ellipse {
+  fill: #1e293b !important;
+  stroke: #475569 !important;
+  color: #f1f5f9 !important;
+}
+.nodeLabel {
+  color: #f1f5f9 !important;
+}
+.edgeLabel {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+  border: 1px solid #334155 !important;
+}
+.edgePath .path {
+  stroke: #64748b !important;
+}
+.cluster rect {
+  fill: #0f172a !important;
+  stroke: #334155 !important;
+}
+.cluster-label {
+  color: #94a3b8 !important;
+}`,
+  },
+  {
+    id: 'colorful',
+    name: 'Colorful',
+    css: `.node rect, .node polygon, .node circle, .node ellipse {
+  stroke-width: 2px !important;
+}
+.edgePath .path {
+  stroke: #6366f1 !important;
+  stroke-width: 2px !important;
+}
+.edgeLabel {
+  background: linear-gradient(135deg, #eef2ff, #fef3c7) !important;
+  border: 1px solid #c7d2fe !important;
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+  font-weight: 500 !important;
+}
+.cluster rect {
+  fill: #f8fafc !important;
+  stroke: #cbd5e1 !important;
+  stroke-dasharray: 4 2 !important;
+}
+.marker {
+  fill: #6366f1 !important;
+}`,
+  },
+  {
+    id: 'vibrant',
+    name: 'Vibrant',
+    css: `.node rect, .node polygon, .node circle, .node ellipse {
+  stroke-width: 2px !important;
+  filter: saturate(1.3) !important;
+}
+.edgePath .path {
+  stroke-width: 2.5px !important;
+}
+.edgeLabel {
+  font-weight: 600 !important;
+  font-size: 13px !important;
+}
+.cluster rect {
+  fill: transparent !important;
+  stroke: #94a3b8 !important;
+}`,
+  },
+  {
+    id: 'monochrome',
+    name: 'Monochrome',
+    css: `.node rect, .node polygon, .node circle, .node ellipse {
+  fill: #ffffff !important;
+  stroke: #000000 !important;
+  color: #000000 !important;
+  stroke-width: 1.5px !important;
+}
+.nodeLabel {
+  color: #000000 !important;
+  font-weight: normal !important;
+}
+.edgeLabel {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+}
+.edgePath .path {
+  stroke: #000000 !important;
+}
+.cluster rect {
+  fill: #fafafa !important;
+  stroke: #000000 !important;
+  stroke-dasharray: 2 2 !important;
+}
+.cluster-label {
+  color: #000000 !important;
+  font-weight: bold !important;
 }`,
   },
 ]

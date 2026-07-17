@@ -1,6 +1,6 @@
 const en = {
   editor: {
-    tab: { code: 'Code', style: 'Style', config: 'Config', docs: 'Docs' },
+    tab: { code: 'Code', style: 'Style', docs: 'Docs' },
     placeholder: 'Enter Mermaid diagram code...',
     viewGuide: 'View {label} Guide',
     viewMermaidDocs: 'View Mermaid Documentation',
@@ -8,7 +8,6 @@ const en = {
   common: {
     preview: 'Preview',
     code: 'Code',
-    config: 'Config',
     docs: 'Docs',
     search: 'Search diagrams...',
     enterCode: 'Enter code to render diagram',
@@ -64,6 +63,7 @@ const en = {
     language: 'Language',
     aiComingSoon: 'AI features coming soon!',
     thisShape: 'This shape',
+    learnMore: 'Learn more',
   },
   toast: {
     saved: 'Saved',
@@ -209,7 +209,7 @@ const en = {
 
 const kh = {
   editor: {
-    tab: { code: 'កូដ', style: 'រចនាប័ទ្ម', config: 'កំណត់រចនាសម្ព័ន្ធ', docs: 'ឯកសារ' },
+    tab: { code: 'កូដ', style: 'រចនាប័ទ្ម', docs: 'ឯកសារ' },
     placeholder: 'បញ្ចូលកូដដ្យាក្រាម Mermaid...',
     viewGuide: 'មើលការណែនាំ {label}',
     viewMermaidDocs: 'មើលឯកសារ Mermaid',
@@ -217,7 +217,6 @@ const kh = {
   common: {
     preview: 'មើលជាមុន',
     code: 'កូដ',
-    config: 'កំណត់រចនាសម្ព័ន្ធ',
     docs: 'ឯកសារ',
     search: 'ស្វែងរកដ្យាក្រាម...',
     enterCode: 'បញ្ចូលកូដដើម្បីបង្ហាញដ្យាក្រាម',
@@ -273,6 +272,7 @@ const kh = {
     language: 'ភាសា',
     aiComingSoon: 'មុខងារ AI នឹងមកដល់ឆាប់ៗ!',
     thisShape: 'រូបរាងនេះ',
+    learnMore: 'ស្វែងយល់បន្ថែម',
   },
   toast: {
     saved: 'បានរក្សាទុក',

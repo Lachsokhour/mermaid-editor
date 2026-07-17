@@ -20,11 +20,11 @@ const flatKh = flatten(kh)
 // All t() keys used in the codebase
 const usedKeys = [
   // editor
-  'editor.tab.code', 'editor.tab.style', 'editor.tab.config', 'editor.tab.docs',
+  'editor.tab.code', 'editor.tab.style', 'editor.tab.docs',
   'editor.placeholder', 'editor.viewGuide', 'editor.viewMermaidDocs',
 
   // common
-  'common.preview', 'common.code', 'common.config', 'common.docs',
+  'common.preview', 'common.code', 'common.docs',
   'common.search', 'common.enterCode', 'common.noDiagram', 'common.saved',
   'common.history', 'common.share', 'common.editWithAI', 'common.versionHistory',
   'common.restore', 'common.clearHistory', 'common.noHistory', 'common.empty',
@@ -37,7 +37,7 @@ const usedKeys = [
   'common.shareDiagram', 'common.presetLink', 'common.markdownLink', 'common.copyDiagramCode',
   'common.gettingStarted', 'common.documentation', 'common.keyboardShortcuts',
   'common.introLine1', 'common.introLine2', 'common.renderDiagram', 'common.saveState',
-  'common.language',   'common.aiComingSoon', 'common.thisShape',
+  'common.language',   'common.aiComingSoon', 'common.thisShape', 'common.learnMore',
 
   // toast
   'toast.saved', 'toast.markdownCopied', 'toast.linkCopied', 'toast.codeCopied',

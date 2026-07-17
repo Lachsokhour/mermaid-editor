@@ -146,6 +146,7 @@ export default function Preview() {
     const el = previewRef.current
     if (!el) return
     const handler = (e) => {
+      if (e.target.closest('.style-editor, .color-palette, .style-panel, [class*="preset"]')) return
       e.preventDefault()
       const delta = e.deltaY > 0 ? -0.1 : 0.1
       zoomRef.current = Math.max(0.2, Math.min(10, zoomRef.current + delta))
