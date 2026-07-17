@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Shuffle, X, Palette } from 'lucide-react'
+import { Shuffle, X, PaintBucket } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
 import { hslToHex, HARMONY_LABELS } from '../utils/palette'
 import { useI18n } from '../i18n/I18nProvider'
@@ -34,7 +34,7 @@ export default function StylePanel() {
         className="p-2 rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 shadow-md hover:shadow-lg text-zinc-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-indigo-400 cursor-pointer transition-all"
         title={t('common.styles')}
       >
-        <Palette size={16} />
+        <PaintBucket size={16} />
       </button>
 
       {open && (

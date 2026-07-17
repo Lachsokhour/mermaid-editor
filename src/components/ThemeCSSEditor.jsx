@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Code2, X, FileCode } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
 import { THEME_CSS_PRESETS } from '../data/stylePresets'
@@ -9,6 +9,13 @@ export default function ThemeCSSEditor() {
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const [activePreset, setActivePreset] = useState('default')
+
+  useEffect(() => {
+    if (activePreset !== 'custom' && activePreset !== 'default') return
+    if (!themeCSS) { setActivePreset('default'); return }
+    const match = THEME_CSS_PRESETS.find(p => p.id !== 'default' && p.css === themeCSS)
+    setActivePreset(match ? match.id : 'custom')
+  }, [themeCSS])
 
   const handlePresetSelect = (preset) => {
     setActivePreset(preset.id)

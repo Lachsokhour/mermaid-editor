@@ -213,7 +213,12 @@ export default function Editor() {
 }
 
 function toColorInputValue(val) {
-  return /^#[0-9a-fA-F]{6}$/.test(val || '') ? val : '#94a3b8'
+  if (/^#[0-9a-fA-F]{6}$/.test(val || '')) return val
+  try {
+    return useEditorStore.getState().themeColors?.primaryColor || '#6366f1'
+  } catch {
+    return '#6366f1'
+  }
 }
 
 function StyleRow({ label, styles, swatches = ['fill', 'stroke'], preview, onUpdate, onRemove, onSelect, active }) {

@@ -366,7 +366,7 @@ const kh = {
     copyStyle: 'ចម្លងរចនាប័ទ្ម',
     removeStyle: 'លុបរចនាប័ទ្ម',
     edgeNotSupported: 'រចនាប័ទ្មគែមមិនគាំទ្រសម្រាប់ប្រភេទដ្យាក្រាមនេះទេ',
-    nodeNotSupported: 'រចនាប័ទ្ម 노드មិនគាំទ្រសម្រាប់ប្រភេទដ្យាក្រាមនេះទេ',
+    nodeNotSupported: 'រចនាប័ទ្ម Node មិនគាំទ្រសម្រាប់ប្រភេទដ្យាក្រាមនេះទេ',
     useThemeCSS: 'ប្រើ Theme CSS សម្រាប់រចនាប័ទ្មសកល',
     edge: 'គែម',
     cluster: 'ក្រុម',

@@ -38,9 +38,6 @@ function initMermaid(currentTheme, themeColors, locale, themeCSS) {
   })
 }
 
-function patchSvgColors(svg, _themeColors, _currentTheme) {
-  return svg
-}
 
 export default function Preview() {
   const { currentCode, currentTheme, gridVisible, zoom, panX, panY, themeColors, themeCSS, selectedElement, selectElement, clearSelection, setZoom, setPan, resetView } = useEditorStore()
@@ -85,8 +82,7 @@ export default function Preview() {
       mermaid.render('mermaid-render-' + id, safeCode).then(({ svg }) => {
         if (id !== renderIdRef.current) return
         setRawSvg(svg)
-        const patched = patchSvgColors(svg, themeColors, currentTheme)
-        setRendered(patched)
+        setRendered(svg)
         setLoading(false)
       }).catch(err => {
         if (id !== renderIdRef.current) return
@@ -233,8 +229,7 @@ export default function Preview() {
       mermaid.render('mermaid-render-' + id, safeCode).then(({ svg }) => {
         if (id !== renderIdRef.current) return
         setRawSvg(svg)
-        const patched = patchSvgColors(svg, themeColors, currentTheme)
-        setRendered(patched)
+        setRendered(svg)
         setLoading(false)
       }).catch(err => {
         if (id !== renderIdRef.current) return

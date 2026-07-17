@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import DIAGRAMS from '../data/diagrams'
 import { useEditorStore } from '../store/editorStore'
 import * as LucideIcons from 'lucide-react'
@@ -6,10 +7,16 @@ import { useI18n } from '../i18n/I18nProvider'
 export default function Sidebar() {
   const { activeDiagram, sidebarOpen, selectDiagram } = useEditorStore()
   const { t } = useI18n()
+  const [search, setSearch] = useState('')
 
   const handleSelect = (id) => {
     selectDiagram(id)
   }
+
+  const q = search.toLowerCase()
+  const filtered = DIAGRAMS.filter(d =>
+    t('diagrams.' + d.id).toLowerCase().includes(q) || d.id.includes(q)
+  )
 
   return (
     <div
@@ -20,12 +27,17 @@ export default function Sidebar() {
       <div className="p-2 border-b border-zinc-200 dark:border-zinc-700">
         <input
           type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
           placeholder={t('common.search')}
           className="w-full px-2 py-1 text-xs rounded border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 outline-none focus:border-indigo-500"
         />
       </div>
       <div className="flex-1 overflow-y-auto">
-        {DIAGRAMS.map(d => {
+        {filtered.length === 0 && (
+          <p className="text-[10px] text-zinc-400 text-center py-4">No diagrams match</p>
+        )}
+        {filtered.map(d => {
           const Icon = LucideIcons[d.icon]
           const isActive = activeDiagram?.id === d.id
           return (
