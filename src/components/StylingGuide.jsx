@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, Paintbrush, ArrowRight, Layers } from 'lucide-react'
+import { ChevronDown, ChevronRight, Paintbrush, ArrowRight, Layers, Copy, Check } from 'lucide-react'
 import { useI18n } from '../i18n/I18nProvider'
 
 function Section({ title, icon: Icon, children, defaultOpen = false }) {
@@ -20,10 +20,40 @@ function Section({ title, icon: Icon, children, defaultOpen = false }) {
 }
 
 function Code({ children }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(children)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      const ta = document.createElement('textarea')
+      ta.value = children
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    }
+  }
+
   return (
-    <pre className="px-2 py-1.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-mono text-zinc-700 dark:text-zinc-300 overflow-x-auto whitespace-pre">
-      {children}
-    </pre>
+    <div className="relative group">
+      <pre className="px-2 py-1.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-mono text-zinc-700 dark:text-zinc-300 overflow-x-auto whitespace-pre">
+        {children}
+      </pre>
+      <button
+        onClick={handleCopy}
+        className="absolute top-1 right-1 p-1 rounded bg-zinc-200 dark:bg-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+        title="Copy"
+      >
+        {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} className="text-zinc-500" />}
+      </button>
+    </div>
   )
 }
 
