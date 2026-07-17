@@ -431,90 +431,94 @@ export const THEME_CSS_PRESETS = [
   {
     id: 'glassmorphism',
     name: 'Glassmorphism',
-    css: `.node rect, .node polygon, .node circle, .node ellipse {
-  fill: rgba(255, 255, 255, 0.25) !important;
-  stroke: rgba(255, 255, 255, 0.4) !important;
-  stroke-width: 1px !important;
-  filter: blur(0px);
-  backdrop-filter: blur(10px);
+    css: `/* Glassmorphism - light overlay effect */
+.node rect, .node polygon, .node circle, .node ellipse {
+  opacity: 0.85 !important;
 }
 .edgeLabel {
-  background-color: rgba(255, 255, 255, 0.3) !important;
-  border-radius: 4px;
-  padding: 2px 4px;
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  border-radius: 8px !important;
+  padding: 2px 8px !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08) !important;
+}
+.cluster rect {
+  opacity: 0.7 !important;
 }`,
   },
   {
     id: 'neon-glow',
     name: 'Neon Glow',
-    css: `.node rect, .node polygon, .node circle, .node ellipse {
-  filter: drop-shadow(0 0 6px currentColor) drop-shadow(0 0 12px currentColor);
-}
-.edgeLabel {
-  filter: drop-shadow(0 0 4px currentColor);
+    css: `/* Neon glow effect */
+.node rect, .node polygon, .node circle, .node ellipse {
+  filter: drop-shadow(0 0 4px rgba(99,102,241,0.4)) drop-shadow(0 0 8px rgba(99,102,241,0.2));
 }
 .edgePath .path {
-  filter: drop-shadow(0 0 3px currentColor);
+  filter: drop-shadow(0 0 2px currentColor);
+}
+.edgeLabel {
+  filter: drop-shadow(0 0 3px rgba(99,102,241,0.3));
 }`,
   },
   {
     id: 'hand-drawn',
     name: 'Hand Drawn',
-    css: `.node rect {
-  rx: 3 !important;
-  ry: 3 !important;
+    css: `/* Hand-drawn / sketch style */
+.node rect, .node polygon, .node circle, .node ellipse {
   stroke-width: 2px !important;
 }
 .edgePath .path {
   stroke-width: 2px !important;
-}
-.node polygon {
-  stroke-width: 2px !important;
+  stroke-dasharray: 3 2 !important;
 }`,
   },
   {
     id: 'flat',
     name: 'Flat',
-    css: `.node rect, .node polygon, .node circle, .node ellipse {
+    css: `/* Flat design - no borders */
+.node rect, .node polygon, .node circle, .node ellipse {
   stroke: none !important;
   stroke-width: 0 !important;
-  filter: none !important;
 }
 .edgePath .path {
   stroke-width: 2px !important;
 }
 .edgeLabel {
   background-color: transparent !important;
+  box-shadow: none !important;
 }`,
   },
   {
     id: 'shadow',
     name: 'Drop Shadow',
-    css: `.node rect, .node polygon, .node circle, .node ellipse {
-  filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.15));
+    css: `/* Soft drop shadow */
+.node rect, .node polygon, .node circle, .node ellipse {
+  filter: drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.12));
 }
 .edgeLabel {
-  filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(1px 2px 3px rgba(0, 0, 0, 0.08));
 }`,
   },
   {
     id: 'bold-edges',
     name: 'Bold Edges',
-    css: `.edgePath .path {
+    css: `/* Bold connection lines */
+.edgePath .path {
   stroke-width: 3px !important;
 }
 .edgeLabel {
-  font-weight: bold !important;
-  font-size: 14px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
 }
 .arrowheadPath {
-  stroke-width: 3px !important;
+  fill: currentColor !important;
+  stroke-width: 2px !important;
 }`,
   },
   {
     id: 'minimal',
     name: 'Minimal',
-    css: `.node rect, .node polygon, .node circle, .node ellipse {
+    css: `/* Minimal - clean and light */
+.node rect, .node polygon, .node circle, .node ellipse {
   fill: transparent !important;
   stroke: #94a3b8 !important;
   stroke-width: 1px !important;
@@ -525,56 +529,54 @@ export const THEME_CSS_PRESETS = [
 }
 .edgeLabel {
   background-color: transparent !important;
+  box-shadow: none !important;
+}
+.cluster rect {
+  fill: transparent !important;
+  stroke: #e2e8f0 !important;
 }`,
   },
   {
     id: 'rounded-modern',
     name: 'Rounded Modern',
-    css: `.node rect {
-  rx: 16 !important;
-  ry: 16 !important;
+    css: `/* Rounded corners everywhere */
+.node rect, .node polygon, .node circle, .node ellipse {
   stroke-width: 2px !important;
 }
-.cluster rect {
-  rx: 12 !important;
-  ry: 12 !important;
-}
 .edgeLabel {
-  border-radius: 8px;
-  padding: 2px 6px;
+  border-radius: 8px !important;
+  padding: 2px 8px !important;
+}
+.cluster rect {
+  stroke-width: 1.5px !important;
 }`,
   },
   {
     id: 'dark-mode',
     name: 'Dark Mode',
-    css: `.node rect, .node polygon, .node circle, .node ellipse {
+    css: `/* Dark theme for all diagrams */
+.node rect, .node polygon, .node circle, .node ellipse {
   fill: #1e293b !important;
   stroke: #475569 !important;
-  color: #f1f5f9 !important;
-}
-.nodeLabel {
-  color: #f1f5f9 !important;
-}
-.edgeLabel {
-  background-color: #1e293b !important;
-  color: #cbd5e1 !important;
-  border: 1px solid #334155 !important;
 }
 .edgePath .path {
   stroke: #64748b !important;
 }
+.edgeLabel {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+  border-radius: 4px !important;
+}
 .cluster rect {
   fill: #0f172a !important;
   stroke: #334155 !important;
-}
-.cluster-label {
-  color: #94a3b8 !important;
 }`,
   },
   {
     id: 'colorful',
     name: 'Colorful',
-    css: `.node rect, .node polygon, .node circle, .node ellipse {
+    css: `/* Colorful - vibrant accents */
+.node rect, .node polygon, .node circle, .node ellipse {
   stroke-width: 2px !important;
 }
 .edgePath .path {
@@ -582,27 +584,23 @@ export const THEME_CSS_PRESETS = [
   stroke-width: 2px !important;
 }
 .edgeLabel {
-  background: linear-gradient(135deg, #eef2ff, #fef3c7) !important;
   border: 1px solid #c7d2fe !important;
   border-radius: 6px !important;
-  padding: 2px 6px !important;
+  padding: 2px 8px !important;
   font-weight: 500 !important;
 }
 .cluster rect {
   fill: #f8fafc !important;
   stroke: #cbd5e1 !important;
   stroke-dasharray: 4 2 !important;
-}
-.marker {
-  fill: #6366f1 !important;
 }`,
   },
   {
     id: 'vibrant',
     name: 'Vibrant',
-    css: `.node rect, .node polygon, .node circle, .node ellipse {
+    css: `/* Vibrant - bolder colors */
+.node rect, .node polygon, .node circle, .node ellipse {
   stroke-width: 2px !important;
-  filter: saturate(1.3) !important;
 }
 .edgePath .path {
   stroke-width: 2.5px !important;
@@ -612,39 +610,29 @@ export const THEME_CSS_PRESETS = [
   font-size: 13px !important;
 }
 .cluster rect {
-  fill: transparent !important;
   stroke: #94a3b8 !important;
 }`,
   },
   {
     id: 'monochrome',
     name: 'Monochrome',
-    css: `.node rect, .node polygon, .node circle, .node ellipse {
+    css: `/* Monochrome - black and white */
+.node rect, .node polygon, .node circle, .node ellipse {
   fill: #ffffff !important;
   stroke: #000000 !important;
-  color: #000000 !important;
   stroke-width: 1.5px !important;
-}
-.nodeLabel {
-  color: #000000 !important;
-  font-weight: normal !important;
-}
-.edgeLabel {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border: 1px solid #000000 !important;
 }
 .edgePath .path {
   stroke: #000000 !important;
+}
+.edgeLabel {
+  background-color: #ffffff !important;
+  border: 1px solid #000000 !important;
 }
 .cluster rect {
   fill: #fafafa !important;
   stroke: #000000 !important;
   stroke-dasharray: 2 2 !important;
-}
-.cluster-label {
-  color: #000000 !important;
-  font-weight: bold !important;
 }`,
   },
 ]

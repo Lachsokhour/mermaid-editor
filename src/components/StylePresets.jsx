@@ -5,14 +5,18 @@ import { ELEMENT_STYLE_PRESETS } from '../data/stylePresets'
 import { useI18n } from '../i18n/I18nProvider'
 
 export default function StylePresets() {
-  const { selectedElement, applyPresetToElement } = useEditorStore()
+  const { selectedElement, applyPresetToElement, updateLinkStyle } = useEditorStore()
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const [activePreset, setActivePreset] = useState(null)
 
   const handleApply = (preset) => {
     if (!selectedElement) return
-    applyPresetToElement(selectedElement.id, preset.styles)
+    if (selectedElement.type === 'edge' && selectedElement.edgeIndex != null && selectedElement.edgeIndex >= 0) {
+      updateLinkStyle(selectedElement.edgeIndex, preset.styles)
+    } else {
+      applyPresetToElement(selectedElement.id, preset.styles)
+    }
     setActivePreset(preset.id)
     setTimeout(() => setActivePreset(null), 800)
   }
