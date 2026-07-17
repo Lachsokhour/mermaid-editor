@@ -40,6 +40,7 @@ function AppContent() {
       document.fonts.load('500 1em "Kantumruy Pro"'),
       document.fonts.load('600 1em "Kantumruy Pro"'),
       document.fonts.load('700 1em "Kantumruy Pro"'),
+      document.fonts.load('400 1em "Google Sans"'),
       preloadExportFonts(),
     ]).catch(() => {})
   }, [])

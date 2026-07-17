@@ -4,8 +4,9 @@ function getFontUrl(locale) {
   const base = 'https://fonts.googleapis.com/css2?'
   const rubik = 'family=Rubik:wght@400;500;600;700'
   const kantumruy = 'family=Kantumruy+Pro:wght@400;500;600;700'
-  if (locale === 'kh') return `${base}${kantumruy}&${rubik}&display=swap`
-  return `${base}${rubik}&display=swap`
+  const googleSans = 'family=Google+Sans:wght@400..700'
+  if (locale === 'kh') return `${base}${kantumruy}&${rubik}&${googleSans}&display=swap`
+  return `${base}${rubik}&${googleSans}&display=swap`
 }
 
 let _fontFaceCss = null

@@ -137,7 +137,7 @@ export default function Editor() {
           value={currentCode}
           onChange={handleCodeChange}
           onKeyDown={handleKeyDown}
-          className="flex-1 w-full p-4 text-sm leading-relaxed font-mono bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-none outline-none resize-none tab-size-2"
+          className="flex-1 w-full p-4 text-sm leading-relaxed font-code bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-none outline-none resize-none tab-size-2"
           spellCheck={false}
           placeholder={t('editor.placeholder')}
         />
