@@ -111,9 +111,8 @@ function parseViewBox(svgEl) {
   return { width: 800, height: 600 }
 }
 
-// Preserved for non-browser SVG consumption (Inkscape, Typst, Office).
-// Not used in the PNG export pipeline — modern browsers render foreignObject
-// correctly in SVG-as-image (Chrome, Firefox, Safari via data: URI).
+// Used by captureLiveSvg() as a fallback when getComputedStyle fails.
+// Also preserved for non-browser SVG consumption (Inkscape, Typst, Office).
 function extractFoStyles(fo) {
   const result = {}
   const divEl = fo.querySelector('div')
@@ -140,6 +139,25 @@ function extractFoStyles(fo) {
     let m
     if (!result.color && (m = ps.match(/(?:^|;)\s*color\s*:\s*([^;!]+)/))) result.color = m[1].trim()
     if (!result.fontSize && (m = ps.match(/font-size\s*:\s*([\d.]+)px/))) result.fontSize = m[1]
+  }
+  return result
+}
+
+function extractComputedFoStyles(liveFo) {
+  const result = {}
+  const div = liveFo.querySelector('div')
+  if (div) {
+    try {
+      const cs = getComputedStyle(div)
+      result.color = cs.color
+      result.fontWeight = cs.fontWeight
+      result.fontSize = parseFloat(cs.fontSize) || 14
+      result.fontFamily = cs.fontFamily
+      const lh = parseFloat(cs.lineHeight)
+      if (lh && lh > 0) result.lineHeight = lh
+    } catch {
+      Object.assign(result, extractFoStyles(liveFo))
+    }
   }
   return result
 }
@@ -226,15 +244,90 @@ export function stripForeignObjects(svg) {
   return result
 }
 
-function getCanvasSvgData(embedFontsFlag = true) {
-  const raw = _rawSvgCache
-  const fn = embedFontsFlag ? embedFonts : (s) => s
-  if (raw) return fn(raw)
-  const svgEl = getSvgEl()
-  if (!svgEl) return null
+function captureLiveSvg(svgEl) {
+  const svgScreenRect = svgEl.getBoundingClientRect()
+  if (svgScreenRect.width === 0 || svgScreenRect.height === 0) {
+    const clone = svgEl.cloneNode(true)
+    return stripForeignObjects(new XMLSerializer().serializeToString(clone))
+  }
+  const vb = svgEl.getAttribute('viewBox') || '0 0 800 600'
+  const vbParts = vb.split(/\s+/).map(Number)
+  const vbW = vbParts[2]
+  const vbH = vbParts[3]
+  const scaleX = svgScreenRect.width / vbW
+  const scaleY = svgScreenRect.height / vbH
+  const NS = 'http://www.w3.org/2000/svg'
   const clone = svgEl.cloneNode(true)
-  const s = new XMLSerializer().serializeToString(clone)
-  return fn(s)
+  const liveFos = svgEl.querySelectorAll('foreignObject')
+  const cloneFos = clone.querySelectorAll('foreignObject')
+
+  for (let i = 0; i < liveFos.length; i++) {
+    const liveFo = liveFos[i]
+    const cloneFo = cloneFos[i]
+    const text = (liveFo.textContent || '').trim()
+    if (!text) { cloneFo.remove(); continue }
+    const lines = getFoTextLines(liveFo)
+    if (lines.length === 0) { cloneFo.remove(); continue }
+    const foRect = liveFo.getBoundingClientRect()
+    const cx = (foRect.left - svgScreenRect.left + foRect.width / 2) / scaleX
+    const cy = (foRect.top - svgScreenRect.top + foRect.height / 2) / scaleY
+    const styles = extractComputedFoStyles(liveFo)
+    const t = document.createElementNS(NS, 'text')
+    t.setAttribute('x', cx)
+    t.setAttribute('text-anchor', 'middle')
+    // dy shifts baseline ~0.33em below center for reliable vertical centering
+    // (dominant-baseline is not supported in SVG-as-image context)
+    const fontSize = styles.fontSize || 14
+    const lineH = styles.lineHeight || fontSize * 1.3
+    if (styles.fontSize) t.setAttribute('font-size', styles.fontSize + 'px')
+    if (styles.fontFamily) t.setAttribute('font-family', styles.fontFamily)
+    if (styles.color) t.setAttribute('fill', styles.color)
+    if (styles.fontWeight && styles.fontWeight !== '400') t.setAttribute('font-weight', styles.fontWeight)
+    if (lines.length === 1) {
+      t.setAttribute('y', cy)
+      t.setAttribute('dy', '0.33em')
+      t.textContent = lines[0]
+    } else {
+      const startY = cy - ((lines.length - 1) * lineH) / 2
+      lines.forEach((line, idx) => {
+        const ts = document.createElementNS(NS, 'tspan')
+        ts.setAttribute('x', cx)
+        ts.setAttribute('y', startY + idx * lineH)
+        ts.textContent = line
+        t.appendChild(ts)
+      })
+    }
+    cloneFo.remove()
+    clone.appendChild(t)
+  }
+
+  let result = new XMLSerializer().serializeToString(clone)
+  if (!result.includes('xmlns='))
+    result = result.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
+  if (result.includes('xlink:') && !result.includes('xmlns:xlink='))
+    result = result.replace('<svg', '<svg xmlns:xlink="http://www.w3.org/1999/xlink"')
+  return result
+}
+
+function getCanvasSvgData(svgEl, stripFo = false) {
+  if (stripFo) {
+    const el = svgEl || getSvgEl()
+    if (!el) return null
+    return captureLiveSvg(el)
+  }
+  const raw = _rawSvgCache
+  let svg = raw
+  if (!svg) {
+    const el = svgEl || getSvgEl()
+    if (!el) return null
+    const clone = el.cloneNode(true)
+    svg = new XMLSerializer().serializeToString(clone)
+  }
+  if (!svg.includes('xmlns='))
+    svg = svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
+  if (svg.includes('xlink:') && !svg.includes('xmlns:xlink='))
+    svg = svg.replace('<svg', '<svg xmlns:xlink="http://www.w3.org/1999/xlink"')
+  return svg
 }
 
 function sanitizeSvgXml(xml) {
@@ -256,10 +349,14 @@ async function svgToCanvas(svgEl, scale = 3) {
     throw new Error(`Canvas too large: ${cw}x${ch}`)
   }
 
-  const svgData = getCanvasSvgData(false)
+  const svgData = getCanvasSvgData(svgEl, true)
   if (!svgData) throw new Error('No SVG data available')
 
   let xml = svgData
+  // Embed fonts using preloaded data-URI @font-face (does not taint canvas)
+  if (_fontFaceCss && !xml.includes('@font-face')) {
+    xml = xml.replace(/(<svg[^>]*>)/, '$1<style>' + _fontFaceCss + '</style>')
+  }
   if (!xml.includes('xmlns=')) {
     xml = xml.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
   }
@@ -354,7 +451,7 @@ export async function downloadPNG() {
   if (!svgEl) { showToast('No diagram to download', 'warning'); return }
   try {
     await preloadExportFonts(getExportLocale())
-    const canvas = await svgToCanvas(svgEl, 3)
+    const canvas = await svgToCanvas(svgEl, 4)
     canvas.toBlob(b => {
       if (b) downloadBlob(b, getExportFilename('png'))
     })
@@ -369,7 +466,7 @@ export async function copyImage() {
   if (!svgEl) { showToast('No diagram to copy', 'warning'); return }
   try {
     await preloadExportFonts(getExportLocale())
-    const canvas = await svgToCanvas(svgEl, 3)
+    const canvas = await svgToCanvas(svgEl, 4)
     const blob = await new Promise(resolve => canvas.toBlob(resolve))
     if (blob) {
       await navigator.clipboard.write([
