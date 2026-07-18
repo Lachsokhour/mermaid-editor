@@ -20,7 +20,7 @@ export default function App() {
 }
 
 function AppContent() {
-  const { currentTheme, toggleSidebar, sidebarOpen, editorPanelWidth, setEditorPanelWidth } = useEditorStore()
+  const { currentTheme, toggleSidebar, sidebarOpen, viewMode, editorPanelWidth, setEditorPanelWidth } = useEditorStore()
   const [shareOpen, setShareOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
 
@@ -121,15 +121,19 @@ function AppContent() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        <div id="editorPanel" className="flex flex-col border-r border-zinc-200 dark:border-zinc-700 min-w-0" style={editorStyle}>
-          <Editor />
-        </div>
-        <div
-          className="resize-handle"
-          onMouseDown={handleResizeStart}
-          onTouchStart={handleResizeStart}
-        />
+        {!viewMode && <Sidebar />}
+        {!viewMode && (
+          <div id="editorPanel" className="flex flex-col border-r border-zinc-200 dark:border-zinc-700 min-w-0" style={editorStyle}>
+            <Editor />
+          </div>
+        )}
+        {!viewMode && (
+          <div
+            className="resize-handle"
+            onMouseDown={handleResizeStart}
+            onTouchStart={handleResizeStart}
+          />
+        )}
         <div className="flex-1 flex flex-col min-w-0">
           <Preview />
         </div>

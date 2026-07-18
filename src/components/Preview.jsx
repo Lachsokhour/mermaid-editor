@@ -49,7 +49,7 @@ function initMermaid(currentTheme, themeColors, themeCSS) {
 
 
 export default function Preview() {
-  const { currentCode, currentTheme, gridVisible, zoom, panX, panY, themeColors, themeCSS, selectedElement, selectElement, clearSelection, setZoom, setPan, resetView } = useEditorStore()
+  const { currentCode, currentTheme, gridVisible, zoom, panX, panY, themeColors, themeCSS, selectedElement, selectElement, clearSelection, setZoom, setPan, resetView, viewMode } = useEditorStore()
   const { t } = useI18n()
   const containerRef = useRef(null)
   const [rendered, setRendered] = useState('')
@@ -324,13 +324,15 @@ export default function Preview() {
           <span className="text-xs text-zinc-400 dark:text-zinc-500">{t('common.enterCode')}</span>
         )}
 
-        <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5">
-          <ThemeCSSEditor />
-          <ClassManager />
-          <StylePanel />
-        </div>
+        {!viewMode && (
+          <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5">
+            <ThemeCSSEditor />
+            <ClassManager />
+            <StylePanel />
+          </div>
+        )}
 
-        {selectedElement && (
+        {!viewMode && selectedElement && (
           <div className="absolute top-3 right-3 z-20">
             <StyleEditor />
           </div>

@@ -95,6 +95,8 @@ export const useEditorStore = create((set, get) => ({
   paletteParams: initialPaletteParams,
   toasts: [],
   sidebarOpen: true,
+  viewMode: false,
+  _savedSidebarOpen: true,
   paletteOpen: false,
   selectedElement: null,
   styleEditorOpen: false,
@@ -127,6 +129,12 @@ export const useEditorStore = create((set, get) => ({
   },
 
   toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
+  toggleViewMode: () => set(s => {
+    if (s.viewMode) {
+      return { viewMode: false, sidebarOpen: s._savedSidebarOpen }
+    }
+    return { viewMode: true, _savedSidebarOpen: s.sidebarOpen, sidebarOpen: false, selectedElement: null }
+  }),
   togglePalette: () => set(s => ({ paletteOpen: !s.paletteOpen })),
   setPaletteOpen: (open) => set({ paletteOpen: open }),
 
