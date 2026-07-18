@@ -153,7 +153,7 @@ export default function Editor() {
         </div>
 
         {/* Style Tab */}
-        <div className={`flex-1${activeTab === 'style' ? '' : ' hidden'}`}>
+        <div className={`flex-1 flex flex-col overflow-hidden${activeTab === 'style' ? '' : ' hidden'}`}>
           <StyleTab />
         </div>
 
