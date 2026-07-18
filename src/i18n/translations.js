@@ -4,6 +4,7 @@ const en = {
     placeholder: 'Enter Mermaid diagram code...',
     viewGuide: 'View {label} Guide',
     viewMermaidDocs: 'View Mermaid Documentation',
+    formatCode: 'Format',
   },
   common: {
     preview: 'Preview',
@@ -216,6 +217,7 @@ const kh = {
     placeholder: 'បញ្ចូលកូដដ្យាក្រាម Mermaid...',
     viewGuide: 'មើលការណែនាំ {label}',
     viewMermaidDocs: 'មើលឯកសារ Mermaid',
+    formatCode: 'រៀបចំ',
   },
   common: {
     preview: 'មើលជាមុន',

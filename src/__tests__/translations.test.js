@@ -22,6 +22,7 @@ const usedKeys = [
   // editor
   'editor.tab.code', 'editor.tab.style', 'editor.tab.docs',
   'editor.placeholder', 'editor.viewGuide', 'editor.viewMermaidDocs',
+  'editor.formatCode',
 
   // common
   'common.preview', 'common.code', 'common.docs',

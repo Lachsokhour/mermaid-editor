@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Code2, Book, AlertTriangle, Workflow, Paintbrush } from 'lucide-react'
+import { Code2, Book, AlertTriangle, Workflow, Paintbrush, Sparkles } from 'lucide-react'
 import { useEditorStore } from '../store/editorStore'
 import { showToast } from '../utils/export'
 import { useI18n } from '../i18n/I18nProvider'
 import { parseClassDefs, parseClassAssignments, parseInlineStyles, parseLinkStyles, styleObjectToString, parseStyleString, DEFAULT_CLASS_STYLE } from '../utils/styleParser'
 import StylingGuide from './StylingGuide'
+import { useCodeMirror } from '../utils/useCodeMirror'
 
 const TABS = [
   { id: 'code', icon: Code2 },
@@ -58,10 +59,11 @@ function setTabInUrl(tab) {
 }
 
 export default function Editor() {
-  const { currentCode, setCurrentCode, activeDiagram, detectType } = useEditorStore()
+  const { currentCode, setCurrentCode, activeDiagram, detectType, currentTheme } = useEditorStore()
   const { t } = useI18n()
   const [activeTab, setActiveTab] = useState(getTabFromUrl)
   const [diagramLabel, setDiagramLabel] = useState('')
+  const editorRef = useRef(null)
   const debounceRef = useRef(null)
 
   useEffect(() => {
@@ -79,8 +81,7 @@ export default function Editor() {
     setTabInUrl(tab)
   }, [])
 
-  const handleCodeChange = useCallback((e) => {
-    const code = e.target.value
+  const handleCodeChange = useCallback((code) => {
     setCurrentCode(code)
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
@@ -88,16 +89,22 @@ export default function Editor() {
     }, 300)
   }, [setCurrentCode, detectType])
 
-  const handleKeyDown = useCallback((e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault()
-      window.dispatchEvent(new CustomEvent('render'))
-    }
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault()
-      showToast(t('common.saved'), 'success')
-    }
+  const handleRender = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('render'))
+  }, [])
+
+  const handleSave = useCallback(() => {
+    showToast(t('common.saved'), 'success')
   }, [t])
+
+  const { format } = useCodeMirror({
+    containerRef: editorRef,
+    value: currentCode,
+    onChange: handleCodeChange,
+    onRender: handleRender,
+    onSave: handleSave,
+    theme: currentTheme,
+  })
 
   const editorLabel = t('diagrams.' + (activeDiagram?.id || '')) || diagramLabel
 
@@ -123,6 +130,16 @@ export default function Editor() {
             </button>
           )
         })}
+        {activeTab === 'code' && (
+          <button
+            onClick={format}
+            title={t('editor.formatCode')}
+            className="flex items-center gap-1 px-2 py-2 text-xs font-medium text-zinc-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+          >
+            <Sparkles size={13} />
+            <span className="hidden sm:inline">{t('editor.formatCode')}</span>
+          </button>
+        )}
         {editorLabel && (
           <span className="ml-auto px-3 py-2 text-[10px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-1">
             <Workflow size={11} />
@@ -133,14 +150,7 @@ export default function Editor() {
 
       {/* Code Tab */}
       {activeTab === 'code' && (
-        <textarea
-          value={currentCode}
-          onChange={handleCodeChange}
-          onKeyDown={handleKeyDown}
-          className="flex-1 w-full p-4 text-sm leading-relaxed font-code bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-none outline-none resize-none tab-size-2"
-          spellCheck={false}
-          placeholder={t('editor.placeholder')}
-        />
+        <div ref={editorRef} className="flex-1 overflow-hidden" />
       )}
 
       {/* Style Tab */}

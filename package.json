@@ -11,7 +11,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.10.4",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/state": "^6.7.1",
+    "@codemirror/view": "^6.43.6",
     "@rollup/rollup-linux-x64-gnu": "^4.62.2",
+    "codemirror": "^6.0.2",
     "lucide-react": "^0.400",
     "mermaid": "^11",
     "react": "^19",
