@@ -130,16 +130,6 @@ export default function Editor() {
             </button>
           )
         })}
-        {activeTab === 'code' && (
-          <button
-            onClick={format}
-            title={t('editor.formatCode')}
-            className="flex items-center gap-1 px-2 py-2 text-xs font-medium text-zinc-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
-          >
-            <Sparkles size={13} />
-            <span className="hidden sm:inline">{t('editor.formatCode')}</span>
-          </button>
-        )}
         {editorLabel && (
           <span className="ml-auto px-3 py-2 text-[10px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-1">
             <Workflow size={11} />
@@ -148,19 +138,27 @@ export default function Editor() {
         )}
       </div>
 
-      {/* Code Tab */}
-      {activeTab === 'code' && (
-        <div ref={editorRef} className="flex-1 overflow-hidden" />
-      )}
+      <>
+        {/* Code Tab */}
+        <div className={`flex-1 relative overflow-hidden${activeTab === 'code' ? '' : ' hidden'}`}>
+          <div ref={editorRef} className="absolute inset-0" />
+          <button
+            onClick={format}
+            title={t('editor.formatCode')}
+            className="absolute top-2 right-2 z-10 flex items-center gap-1 px-2 py-1.5 text-xs font-medium rounded-md bg-white dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-sm border border-zinc-200 dark:border-zinc-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors cursor-pointer"
+          >
+            <Sparkles size={13} />
+            <span className="hidden sm:inline">{t('editor.formatCode')}</span>
+          </button>
+        </div>
 
-      {/* Style Tab */}
-      {activeTab === 'style' && (
-        <StyleTab />
-      )}
+        {/* Style Tab */}
+        <div className={`flex-1${activeTab === 'style' ? '' : ' hidden'}`}>
+          <StyleTab />
+        </div>
 
-      {/* Docs Tab */}
-      {activeTab === 'docs' && (
-        <div className="flex-1 p-4 sm:p-6 overflow-y-auto text-sm text-zinc-600 dark:text-zinc-400 space-y-4">
+        {/* Docs Tab */}
+        <div className={`flex-1 p-4 sm:p-6 overflow-y-auto text-sm text-zinc-600 dark:text-zinc-400 space-y-4${activeTab === 'docs' ? '' : ' hidden'}`}>
           <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
             <AlertTriangle size={14} />
             <span className="font-medium">{t('common.gettingStarted')}</span>
@@ -217,7 +215,7 @@ export default function Editor() {
             <StylingGuide />
           </div>
         </div>
-      )}
+      </>
     </div>
   )
 }
