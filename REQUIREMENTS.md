@@ -196,7 +196,7 @@ Uses Tailwind's default font-size scale (no custom sizes in theme). Font weights
 | F-08 | As a user, I want a live preview that updates as I type (debounced), so that I can see my diagram in real time. | **Must-have** | F-01 |
 | F-09 | As a user, I want to pan (drag) and zoom (scroll/buttons) the preview, so that I can inspect large diagrams. | **Must-have** | F-08 |
 | F-10 | As a user, I want to reset the view to 100% zoom and center, so that I can quickly return to the default view. | **Should-have** | F-09 |
-| F-11 | As a user, I want to go fullscreen with the preview panel, so that I can focus on the diagram. | **Could-have** | F-08 |
+| F-11 | As a user, I want to go fullscreen with the preview panel, so that I can focus on the diagram. | **Should-have** | F-08 |
 | F-12 | As a user, I want to see syntax errors displayed clearly on the preview, so that I can fix my code. | **Must-have** | F-08 |
 | F-13 | As a user, I want a view mode that hides all editing panels, so that I can present or review the diagram without distractions. | **Should-have** | F-08 |
 
@@ -208,7 +208,7 @@ Uses Tailwind's default font-size scale (no custom sizes in theme). Font weights
 | F-15 | As a user, I want a harmony palette generator (hue + 4 harmony modes) that creates a 5-color scheme, so that I can quickly find appealing color combinations. | **Should-have** | F-14 |
 | F-16 | As a user, I want 5 named color presets (Indigo, Emerald, Rose, Amber, Teal) for one-click theme switching, so that I can quickly restyle my diagram. | **Should-have** | F-14 |
 | F-17 | As a user, I want to toggle between light and dark mode, so that my diagrams look good in any environment. | **Must-have** | F-14 |
-| F-18 | As a user, I want a grid overlay toggle on the preview canvas, so that I can align elements visually. | **Could-have** | F-08 |
+| F-18 | As a user, I want a grid overlay toggle on the preview canvas, so that I can align elements visually. | **Should-have** | F-08 |
 | F-19 | As a user, I want to apply global CSS to the SVG diagram via a CSS editor (11 presets + custom), so that I can control every visual aspect of the rendered diagram. | **Should-have** | F-08 |
 
 #### Category: Per-Element Styling
@@ -221,8 +221,9 @@ Uses Tailwind's default font-size scale (no custom sizes in theme). Font weights
 | F-23 | As a user, I want to apply 18 edge style presets (thick, dashed, dotted, colored, animated, etc.), so that I can differentiate relationship types. | **Should-have** | F-20 |
 | F-24 | As a user, I want to create reusable `classDef` styles, assign them to nodes, and manage them via a class manager panel, so that I can maintain consistent styling. | **Should-have** | F-20 |
 | F-25 | As a user, I want to remove styles from a selected element, so that I can revert to defaults. | **Should-have** | F-20 |
-| F-26 | As a user, I want to copy the style string of an element to clipboard, so that I can reuse it elsewhere. | **Could-have** | F-20 |
-| F-27 | As a user, I want styling capabilities to be diagram-aware (e.g., no edge styling for sequence diagrams), so that I only see relevant controls. | **Should-have** | F-20, F-10 |
+| F-26 | As a user, I want to copy the style string of an element to clipboard, so that I can reuse it elsewhere. | **Should-have** | F-20 |
+| F-27 | As a user, I want styling capabilities to be diagram-aware (e.g., no edge styling for sequence diagrams), so that I only see relevant controls. | **Should-have** | F-20, capability data from `diagrams.js` |
+| F-42 | As a user, I want edges to have a wider invisible hit area so that thin lines are still easy to click. | **Should-have** | F-20 |
 
 #### Category: Export & Share
 
@@ -232,7 +233,7 @@ Uses Tailwind's default font-size scale (no custom sizes in theme). Font weights
 | F-29 | As a user, I want to download my diagram as PNG at high resolution (4x), so that I can use it in presentations and social media. | **Must-have** | F-08 |
 | F-30 | As a user, I want to copy my diagram as a PNG image to the system clipboard, so that I can paste it directly into other apps. | **Should-have** | F-08 |
 | F-31 | As a user, I want to copy the Markdown-encoded diagram code, so that I can embed it in documentation. | **Should-have** | F-01 |
-| F-32 | As a user, I want to download the raw `.mmd` file, so that I can open it in other mermaid-compatible tools. | **Could-have** | F-01 |
+| F-32 | As a user, I want to download the raw `.mmd` file, so that I can open it in other mermaid-compatible tools. | **Should-have** | F-01 |
 | F-33 | As a user, I want to generate a shareable URL with my diagram code, so that I can share my work with others. | **Should-have** | F-01 |
 | F-34 | As a user, I want Khmer fonts to render correctly in exported PNGs, so that my Khmer diagrams look professional. | **Should-have** | F-29 |
 | F-35 | As a user, I want PNG exports to match the live preview pixel-for-pixel, so that what I see is what I get. | **Must-have** | F-29 |
@@ -251,7 +252,7 @@ Uses Tailwind's default font-size scale (no custom sizes in theme). Font weights
 |---|---|---|---|
 | F-39 | As a new user, I want a built-in styling guide with examples I can copy, so that I can learn how to style diagrams. | **Should-have** | None |
 | F-40 | As a user, I want "Getting Started" instructions and keyboard shortcut reference in the Docs tab, so that I can learn the tool quickly. | **Should-have** | None |
-| F-41 | As a user, I want filtered search in the sidebar so that I can quickly find a diagram type by name. | **Could-have** | None |
+| F-41 | As a user, I want filtered search in the sidebar so that I can quickly find a diagram type by name. | **Should-have** | None |
 
 ### 3.2 Feature Dependency Graph
 
@@ -302,7 +303,7 @@ F-01 (Code Editor)
 | Metric | Description |
 |---|---|
 | **User adoption** | Number of daily/weekly active users creating and exporting diagrams |
-| **Diagram output quality** | PNG/SVG exports match the live preview pixel-for-pefixel (zero reported positioning or font issues) |
+| **Diagram output quality** | PNG/SVG exports match the live preview pixel-for-pixel (zero reported positioning or font issues) |
 | **Khmer market reach** | Successful adoption by Cambodian educators, students, and technical writers who need Khmer-language diagramming |
 | **Zero-server cost** | Fully client-side architecture must remain serverless to keep operating costs at $0/month |
 
