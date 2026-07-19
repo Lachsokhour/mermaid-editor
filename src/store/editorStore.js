@@ -26,6 +26,7 @@ function saveToStorage(state) {
       diagramPaletteParams: state.diagramPaletteParams,
       themeCSS: state.themeCSS,
       sidebarOpen: state.sidebarOpen,
+      diagramCodes: state.diagramCodes,
     }))
   } catch {}
 }
@@ -81,7 +82,7 @@ export const useEditorStore = create((set, get) => ({
   activeDiagram: stored?.activeDiagramId
     ? DIAGRAMS.find(d => d.id === stored.activeDiagramId) || DIAGRAMS[0]
     : DIAGRAMS[0],
-  currentCode: stored?.code ?? DIAGRAMS[0].code,
+  currentCode: stored?.diagramCodes?.[initialActiveId] ?? stored?.code ?? DIAGRAMS[0].code,
   currentTheme: stored?.theme ?? 'light',
   gridVisible: stored?.grid ?? true,
   zoom: 1,
@@ -93,6 +94,7 @@ export const useEditorStore = create((set, get) => ({
   diagramThemeColors: initialDiagramColors,
   themeColors: initialDiagramColors[initialActiveId] || getDefaultColorsFor(initialActiveId),
   diagramPaletteParams: stored?.diagramPaletteParams ?? {},
+  diagramCodes: stored?.diagramCodes ?? {},
   paletteParams: initialPaletteParams,
   toasts: [],
   sidebarOpen: stored?.sidebarOpen ?? true,
@@ -112,8 +114,10 @@ export const useEditorStore = create((set, get) => ({
 
   setCurrentCode: (code) => {
     const state = get()
+    const id = state.activeDiagram?.id
     const history = [...state.history, { code: state.currentCode, ts: Date.now() }]
-    set({ currentCode: code, history })
+    const diagramCodes = id ? { ...state.diagramCodes, [id]: code } : state.diagramCodes
+    set({ currentCode: code, history, diagramCodes })
     saveToStorage(get())
   },
 
@@ -204,13 +208,18 @@ export const useEditorStore = create((set, get) => ({
     const d = DIAGRAMS.find(x => x.id === id)
     if (!d) return
     const state = get()
+    const oldId = state.activeDiagram?.id
+    const diagramCodes = { ...state.diagramCodes }
+    if (oldId) diagramCodes[oldId] = state.currentCode
+    const savedCode = diagramCodes[id]
     const diagramColors = state.diagramThemeColors[id] || getDefaultColorsFor(id)
     const params = getPaletteFor(state, id)
     set({
       activeDiagram: d,
       themeColors: diagramColors,
       paletteParams: params,
-      currentCode: silent ? state.currentCode : d.code,
+      currentCode: silent ? state.currentCode : (savedCode ?? d.code),
+      diagramCodes,
       paletteOpen: false,
     })
     if (!silent) {
@@ -227,9 +236,12 @@ export const useEditorStore = create((set, get) => ({
         if (d) {
           const state = get()
           if (state.activeDiagram?.id !== d.id) {
+            const oldId = state.activeDiagram?.id
+            const diagramCodes = { ...state.diagramCodes }
+            if (oldId) diagramCodes[oldId] = state.currentCode
             const diagramColors = state.diagramThemeColors[d.id] || getDefaultColorsFor(d.id)
             const params = getPaletteFor(state, d.id)
-            set({ activeDiagram: d, themeColors: diagramColors, paletteParams: params })
+            set({ activeDiagram: d, themeColors: diagramColors, paletteParams: params, diagramCodes })
           }
           return d
         }
@@ -247,7 +259,10 @@ export const useEditorStore = create((set, get) => ({
   },
 
   restoreFromHistory: (entry) => {
-    set({ currentCode: entry.code })
+    const state = get()
+    const id = state.activeDiagram?.id
+    const diagramCodes = id ? { ...state.diagramCodes, [id]: entry.code } : state.diagramCodes
+    set({ currentCode: entry.code, diagramCodes })
     saveToStorage(get())
   },
 
@@ -282,11 +297,13 @@ export const useEditorStore = create((set, get) => ({
   // --- Internal: code mutation with history ---
   _mutateCode: (mutator) => {
     const state = get()
+    const id = state.activeDiagram?.id
     const prevCode = state.currentCode
     const newCode = mutator(prevCode)
     if (newCode === prevCode) return
     const history = [...state.history, { code: prevCode, ts: Date.now() }]
-    set({ currentCode: newCode, history })
+    const diagramCodes = id ? { ...state.diagramCodes, [id]: newCode } : state.diagramCodes
+    set({ currentCode: newCode, history, diagramCodes })
     saveToStorage(get())
   },
 
