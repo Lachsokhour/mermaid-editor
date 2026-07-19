@@ -25,6 +25,7 @@ function saveToStorage(state) {
       diagramThemeColors: state.diagramThemeColors,
       diagramPaletteParams: state.diagramPaletteParams,
       themeCSS: state.themeCSS,
+      sidebarOpen: state.sidebarOpen,
     }))
   } catch {}
 }
@@ -94,7 +95,7 @@ export const useEditorStore = create((set, get) => ({
   diagramPaletteParams: stored?.diagramPaletteParams ?? {},
   paletteParams: initialPaletteParams,
   toasts: [],
-  sidebarOpen: true,
+  sidebarOpen: stored?.sidebarOpen ?? true,
   viewMode: false,
   _savedSidebarOpen: true,
   paletteOpen: false,
@@ -128,7 +129,7 @@ export const useEditorStore = create((set, get) => ({
     saveToStorage(get())
   },
 
-  toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
+  toggleSidebar: () => { set(s => ({ sidebarOpen: !s.sidebarOpen })); saveToStorage(get()) },
   toggleViewMode: () => set(s => {
     if (s.viewMode) {
       return { viewMode: false, sidebarOpen: s._savedSidebarOpen }
