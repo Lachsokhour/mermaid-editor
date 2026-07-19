@@ -61,6 +61,7 @@ function initMermaid(currentTheme, themeColors, themeCSS) {
 
 export default function Preview() {
   const { currentCode, currentTheme, gridVisible, zoom, panX, panY, themeColors, themeCSS, selectedElement, selectElement, clearSelection, setZoom, setPan, resetView, viewMode } = useEditorStore()
+  const viewModeRef = useRef(viewMode)
   const { t } = useI18n()
   const containerRef = useRef(null)
   const [rendered, setRendered] = useState('')
@@ -82,6 +83,9 @@ export default function Preview() {
   useEffect(() => {
     zoomRef.current = zoom
   }, [zoom])
+  useEffect(() => {
+    viewModeRef.current = viewMode
+  }, [viewMode])
 
   useEffect(() => {
     const code = currentCode?.trim()
@@ -124,6 +128,7 @@ export default function Preview() {
         resetView()
       }
       addClickHandlers(container, (element) => {
+        if (viewModeRef.current) return
         const enriched = { ...element }
         if (element.type === 'edge') {
           const edgeMatch = element.dataId?.match(/^L-(\w+)-(\w+)-(\d+)$/)
