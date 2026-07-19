@@ -27,13 +27,14 @@ describe('DIAGRAM_CAPABILITIES covers all diagram types', () => {
 describe('capabilities are correct per diagram type', () => {
   // Diagrams that support node styling (inline style / classDef)
   const nodeStyleDiagrams = [
-    'flowchart', 'class', 'state', 'entity-relationship', 'sequence',
+    'flowchart', 'class', 'state', 'entity-relationship',
     'mindmap', 'timeline', 'user-journey', 'requirement',
     'architecture', 'block', 'c4', 'treeview', 'treemap', 'venn',
   ]
   const noNodeStyleDiagrams = [
     'gantt', 'kanban', 'git', 'ishikawa', 'packet', 'pie',
     'quadrant', 'radar', 'sankey', 'info', 'eventmodeling',
+    'sequence',
   ]
 
   it.each(nodeStyleDiagrams)('%s supports node styling', (id) => {

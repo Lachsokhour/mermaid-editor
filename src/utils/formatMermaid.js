@@ -1,4 +1,4 @@
-const ARROW = /--[>ox]|==[>ox]|-\.->|===|<--|<-\.-|<===|<==|<--|<-=/
+const ARROW = /-->>|--[>ox]|==>>|==[>ox]|-\.->|===|<--|<-\.-|<===|<==|<--|<-=/
 const BLOCK_START = /subgraph\b/i
 const BLOCK_END = /^end\b/i
 
@@ -54,6 +54,7 @@ export function formatMermaid(code) {
       indentLevel = Math.max(0, indentLevel - 1)
     }
 
+    line = line.replace(/-->\s*>/g, '-->>').replace(/==>\s*>/g, '==>>')
     line = normalizeArrows(line)
 
     const indent = '  '.repeat(indentLevel)

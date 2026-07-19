@@ -65,7 +65,7 @@ export const DIAGRAM_CAPABILITIES = {
   class:                  { nodeStyle: true, edgeStyle: false, classDef: true, clusters: false },
   state:                  { nodeStyle: true, edgeStyle: false, classDef: true, clusters: true },
   'entity-relationship':  { nodeStyle: true, edgeStyle: false, classDef: true, clusters: false },
-  sequence:               { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
+  sequence:               { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
   mindmap:                { nodeStyle: true, edgeStyle: false, classDef: false, clusters: false },
   gantt:                  { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
   kanban:                 { nodeStyle: false, edgeStyle: false, classDef: false, clusters: false },
@@ -108,7 +108,7 @@ export const PALETTE_PRESETS = {
 // Per-diagram default color assignments — each diagram type gets its own distinct palette
 export const DEFAULT_COLORS_BY_TYPE = {
   flowchart:      { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
-  sequence:       { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#495057', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
+  sequence:       { primaryColor: '#6366f1', secondaryColor: '#eef2ff', lineColor: '#334155', primaryBorderColor: '#ffffff', primaryTextColor: '#212529' },
   class:          { primaryColor: '#10b981', secondaryColor: '#d1fae5', lineColor: '#374151', primaryBorderColor: '#ffffff', primaryTextColor: '#111827' },
   'entity-relationship': { primaryColor: '#10b981', secondaryColor: '#d1fae5', lineColor: '#374151', primaryBorderColor: '#ffffff', primaryTextColor: '#111827' },
   state:          { primaryColor: '#f43f5e', secondaryColor: '#ffe4e6', lineColor: '#6b7280', primaryBorderColor: '#ffffff', primaryTextColor: '#1f2937' },

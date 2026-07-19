@@ -43,6 +43,17 @@ function initMermaid(currentTheme, themeColors, themeCSS) {
       lineColor: themeColors.lineColor,
       primaryBorderColor: themeColors.primaryBorderColor,
       primaryTextColor: themeColors.primaryTextColor,
+      // Sequence diagram: lifelines, message arrows & alt/loop boxes
+      actorLineColor: isDark ? '#94a3b8' : themeColors.lineColor,
+      signalColor: isDark ? '#94a3b8' : themeColors.lineColor,
+      signalTextColor: themeColors.primaryTextColor,
+      labelTextColor: themeColors.primaryTextColor,
+      actorTextColor: themeColors.primaryTextColor,
+      actorBorder: themeColors.primaryColor,
+      actorBkg: isDark ? '#27272a' : themeColors.secondaryColor,
+      loopTextColor: themeColors.primaryTextColor,
+      altSectionBkgColor: isDark ? '#27272a' : '#f8f8fa',
+      altBackground: isDark ? '#18181b' : '#fafafa',
     },
   })
 }
