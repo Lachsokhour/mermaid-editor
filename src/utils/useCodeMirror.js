@@ -29,7 +29,7 @@ const DARK_THEME = EditorView.theme({
     outline: 'none',
   },
   '.cm-scroller': {
-    fontFamily: '"Google Sans", "Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: '"Fira Code", "Noto Sans Khmer", monospace',
     fontSize: '13px',
     lineHeight: '1.6',
   },
@@ -65,7 +65,7 @@ const LIGHT_THEME = EditorView.theme({
     outline: 'none',
   },
   '.cm-scroller': {
-    fontFamily: '"Google Sans", "Rubik", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: '"Fira Code", "Noto Sans Khmer", monospace',
     fontSize: '13px',
     lineHeight: '1.6',
   },
